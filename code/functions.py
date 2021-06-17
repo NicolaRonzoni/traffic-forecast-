@@ -21,6 +21,8 @@ from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
 from tslearn.metrics import gamma_soft_dtw
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+
+#speed km/h
 def data_split(data):
     data_speed=data['Speed (km/h)']
     #TRAIN
@@ -71,6 +73,61 @@ def data_split(data):
     test_data=test_data.between_time('4:59', '22:59')
     len(test_data)
     return train_data,test_data
+
+#flow veh/h
+def data_split_flow(data):
+    data_speed=data['Flow (veh/h)']
+    #TRAIN
+    # 1/1 20/6
+    first_period=data_speed[0:41040]
+    index_first_period=pd.date_range('2013-01-01',periods=41040, freq='6min')
+    first_period=pd.Series(data=first_period.values, index=index_first_period)
+    first_period=first_period.between_time('4:59', '22:59')
+    #25/6 24/8
+    second_period=data_speed[42000:56640]
+    index_second_period=pd.date_range('2013-06-25',periods=14640, freq='6min')
+    second_period=pd.Series(data=second_period.values, index=index_second_period)
+    second_period=second_period.between_time('4:59', '22:59')
+    #27/8 7/9
+    third_period=data_speed[57120:60000]
+    index_third_period=pd.date_range('2013-08-27',periods=2880, freq='6min')
+    third_period=pd.Series(data=third_period.values, index=index_third_period)
+    third_period=third_period.between_time('4:59', '22:59')
+    #10/9 31/12
+    fourth_period=data_speed[60480:87600]
+    index_fourth_period=pd.date_range('2013-9-10',periods=27120, freq='6min')
+    fourth_period=pd.Series(data=fourth_period.values, index=index_fourth_period)
+    fourth_period=fourth_period.between_time('4:59', '22:59')
+    train_data=pd.concat([first_period,second_period,third_period,fourth_period])
+    len(train_data)
+    #TEST
+    # Mo, 10.02.  – Sun, 16.02.
+    index_first_week=pd.date_range('2014-02-10',periods=1680, freq='6min')
+    #Mo, 17.03.  – Sun, 23.03.
+    index_second_week=pd.date_range('2014-03-17',periods=1680, freq='6min')
+    #Mo, 11.08.  – Sun, 17.08.
+    index_third_week=pd.date_range('2014-08-11',periods=1680, freq='6min')
+    #Mo, 08.09.  – Sun, 14.09.
+    index_fourth_week=pd.date_range('2014-09-18',periods=1680, freq='6min')
+    #Mo, 03.11.  – Sun, 09.11.
+    index_fifth_week=pd.date_range('2014-11-03',periods=1680, freq='6min')
+
+    index_first_week=pd.Series(data=index_first_week)
+    index_second_week=pd.Series(data=index_second_week)
+    index_third_week=pd.Series(data=index_third_week)
+    index_fourth_week=pd.Series(data=index_fourth_week)
+    index_fifth_week=pd.Series(data=index_fifth_week)
+
+    index_test=pd.concat([index_first_week,index_second_week,index_third_week,index_fourth_week,index_fifth_week],ignore_index=True)
+
+    test_data=data_speed[87600:96000]
+    test_data=pd.Series(data=test_data.values, index=index_test.values)
+    test_data=test_data.between_time('4:59', '22:59')
+    len(test_data)
+    return train_data,test_data
+
+
+
 
 #define a function to create the daily time series and the scaling 
 def daily_series(data,n):
