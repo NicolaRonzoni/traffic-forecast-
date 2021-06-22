@@ -21,6 +21,8 @@ from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
 from tslearn.metrics import gamma_soft_dtw
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+from tslearn.metrics import soft_dtw, gamma_soft_dtw
+
 
 #speed km/h
 def data_split(data):
@@ -129,7 +131,7 @@ def data_split_flow(data):
 
 
 
-#define a function to create the daily time series and the scaling 
+#define a function to create the daily time series and the scaling ---> clustering 
 def daily_series(data,n):
     #normalization of the data 
     data=np.array(data)
@@ -149,6 +151,24 @@ def daily_series(data,n):
     #create univariate series for normalized observations 
     daily_time_series = to_time_series(time_series)
     return daily_time_series, scaler_series
+
+#define a function to create the daily time series but without the scaling for the prediction 
+#the scaling require the knowledge of the all test set, instead in the prediction we assume that 
+#we don't have all data from the very beginning but they become available step by step 
+def daily_series_pred(data,n):
+    #normalization of the data 
+    data=np.array(data)
+    data=data.reshape((len(data), 1))
+    #from array to list 
+    series=data.tolist()
+    len(series)
+    #create daily time series 
+    time_series=list(partition(n,series))
+    #from list to multidimensional array 
+    time_series=np.asarray(time_series)
+    #create univariate series for normalized observations 
+    daily_time_series = to_time_series(time_series)
+    return daily_time_series
 
 # Gap Statistic for K means
 def optimalK(data, nrefs=3, maxClusters=15):
@@ -200,7 +220,22 @@ plt.xlabel('K');
 plt.ylabel('Gap Statistic');
 plt.title('Gap Statistic vs. K');
 
-
+#find the day closest to the centroid 
+def closest(multivariate_time_series_train,prediction_train,centroids,k,events_train):
+    if k==0:
+        c=k+0.05
+    else:
+        c=k
+    index=events_train[events_train==c].index
+    columns=["day","sim"]
+    df=pd.DataFrame(columns=columns)
+    cluster=multivariate_time_series_train[prediction_train==k]
+    for i in range(0,cluster.shape[0]):
+        sim = soft_dtw(cluster[i,:,:], centroids[k,:,:], gamma=gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0))
+        df = df.append({'day': i,'sim': sim}, ignore_index=True)
+    df["sim"]=df["sim"].abs()
+    df.index=index
+    return print(df[df.sim==df.sim.min()])
 
 #PREDICTION
 from tslearn.svm import TimeSeriesSVR
@@ -220,17 +255,15 @@ def walk_forward_validation(train,test,window_size,starting_time):
     PRED_test=[]
     GROUND_TRUTH_train=[]
     GROUND_TRUTH_test=[]
-    for t in range(0,20): # number of prediction from starting point to the end of the day
+    for t in range(0,30): # number of prediction from starting point to the end of the day
         # take an observation forward: len(X_train)=len(X_test)+1 
         train_set=train[:,0:starting_time+1+t,:]
         #select only most window_size+1 recent observations for train 
         XY_train=train_set[:,-window_size-1:,:]
         #select only most window_size recent observations for test
         X_test=X_test[:,-window_size:,:]
-        #define the number of cluster 
-        k=optimalK(XY_train, nrefs=3, maxClusters=7)[0]
         #clustering
-        km_dba = TimeSeriesKMeans(n_clusters=k, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
+        km_dba = TimeSeriesKMeans(n_clusters=3, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
         #assign the day you want to predict to a cluster
         prediction_train=km_dba.fit_predict(XY_train,y=None)
         prediction_test_cluster= km_dba.predict(X_test)
@@ -274,9 +307,6 @@ def walk_forward_validation(train,test,window_size,starting_time):
         print(mse_train,mse_test,prediction_test_cluster)
     return mean(MSE_train), mean(MSE_test), PRED_train, PRED_test, GROUND_TRUTH_train, GROUND_TRUTH_test
  
-train=random_walks(n_ts=50, sz=30, d=4)
-test=random_walks(n_ts=1, sz=30, d=4)
-result=walk_forward_validation(train,test,10,10)  
 
 
       
@@ -293,10 +323,8 @@ def loubes(train,test,window_size,starting_time):
         XY_train=train_set[:,-window_size-1:,:]
         #select only most window_size recent observations for test
         X_test=X_test[:,-window_size:,:]
-        #define the number of cluster 
-        k=optimalK(XY_train, nrefs=3, maxClusters=7)[0]
         #clustering
-        km_dba = TimeSeriesKMeans(n_clusters=k, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
+        km_dba = TimeSeriesKMeans(n_clusters=3, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
         #assign the day you want to predict to a cluster
         km_dba.fit(XY_train,y=None)
         prediction_test_cluster= km_dba.predict(X_test)
