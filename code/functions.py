@@ -21,7 +21,10 @@ from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
 from tslearn.metrics import gamma_soft_dtw
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
-from tslearn.metrics import soft_dtw, gamma_soft_dtw
+from tslearn.metrics import soft_dtw, gamma_soft_dtw,dtw
+from sklearn.multioutput import MultiOutputRegressor
+from tslearn.generators import random_walks
+from sklearn.pipeline import Pipeline
 
 
 #speed km/h
@@ -407,18 +410,113 @@ def loubes(train,test,window_size,starting_time):
     ground_truth=np.concatenate(ground_truth,axis=0)
     return PRED_test, ground_truth, mean(MSE_test)
 
-prova=centroids[0]
-prova.shape
-prova[-1:,1]
-from tslearn.generators import random_walks
-train=random_walks(n_ts=50, sz=30, d=4)
-test=random_walks(n_ts=1, sz=30, d=4)
+#centroids 
+centroids=km_dba.cluster_centers_
+
+centroids.shape
+
+def SVR_pred(train,test,starting_time,window_past,window_future,loop):
+    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
+    prediction_train=km_dba.predict(train)
+    #take the centroid 
+    centroid=km_dba.cluster_centers_
+    #for each centroid select only the observations available of the day that we would like to predict 
+    train_set=centroid[:,0:starting_time,:]
+    #select observations available in the test
+    X_test=test[:,0:starting_time,:]
+    columns=["cluster","sim"]
+    df=pd.DataFrame(columns=columns)
+    #select the centroid closest to test data 
+    for i in range (0,4):
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
+      df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
+    df["sim"]=df["sim"].abs()
+    cluster=df[df.sim==df.sim.min()].cluster
+    train_set=train[prediction_train==cluster.values]
+    #X and Y split select the loop that we would like to predict 
+    X_train=train_set[:,starting_time-window_past:starting_time,loop]
+    Y_train=train_set[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,loop]
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = TimeSeriesSVR(kernel="gak", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train)
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return cluster, Y_pred, Y_test
+
+def classification_pred(train,test,starting_time,window_future):
+    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
+    prediction_train=km_dba.predict(train)
+    #take the centroid 
+    centroid=km_dba.cluster_centers_
+    #for each centroid select only the observations available of the day that we would like to predict 
+    train_set=centroid[:,0:starting_time,:]
+    #select observations available in the test
+    X_test=test[:,0:starting_time,:]
+    columns=["cluster","sim"]
+    df=pd.DataFrame(columns=columns)
+    #select the centroid closest to test data 
+    for i in range (0,4):
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
+      df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
+    df["sim"]=df["sim"].abs()
+    cluster=df[df.sim==df.sim.min()].cluster
+    print(cluster)
+    train_set=train[prediction_train==cluster.values]
+    #X and Y split only for test set, train set XY together 
+    XY_train=train_set[:,0:starting_time+window_future,:]
+    X_test=test[:,0:starting_time,:]
+    Y_test=test[0,starting_time:starting_time+window_future,:]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    for j in range(0,train_set.shape[0]):
+        sim1 = dtw(X_test[0,:,:],XY_train[j,:,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1[df1.sim1==df1.sim1.min()].ts
+    print(ts)
+    #select the time series closest to the test and return the window_future as prediction
+    Y_pred=train_set[ts.index,starting_time:starting_time+window_future,:]
+    return cluster,ts, Y_pred, Y_test
 
 
-prediction=loubes(train,test,10,25)
+def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
+    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
+    prediction_train=km_dba.predict(train)
+    #take the centroid 
+    centroid=km_dba.cluster_centers_
+    #for each centroid select only the observations available of the day that we would like to predict 
+    train_set=centroid[:,0:starting_time,:]
+    #select observations available in the test
+    X_test=test[:,0:starting_time,:]
+    columns=["cluster","sim"]
+    df=pd.DataFrame(columns=columns)
+    #select the centroid closest to test data 
+    for i in range (0,4):
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
+      df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
+    df["sim"]=df["sim"].abs()
+    cluster=df[df.sim==df.sim.min()].cluster
+    train_set=train[prediction_train==cluster.values]
+    #X and Y split select the loop that we would like to predict 
+    X_train=train_set[:,starting_time-window_past:starting_time,:]
+    X_train=X_train.reshape(train_set.shape[0],-1)
+    Y_train=train_set[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    X_test=X_test.reshape(1,-1)
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = TimeSeriesSVR(kernel="gak", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train)
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return cluster, Y_pred, Y_test
 
-prediction.shape
-x=np.concatenate(prediction, axis=0 )
-x.shape
 
-x[:,:,1] 
+
+

@@ -305,12 +305,12 @@ series_test_S61_density_pred=daily_series_pred(S61_density[1],180)
 series_test_S61_density_pred.shape
 
 #multivariate time series train
-multivariate_pred=np.dstack((series_train_S54_speed_pred,series_train_S1706_speed_pred,series_train_S56_speed_pred,series_train_S57_speed_pred,series_train_S1707_speed_pred,series_train_S59_speed_pred,series_train_S60_speed_pred,series_train_S61_speed_pred))
+multivariate_pred=np.dstack((series_train_S54_flow_pred,series_train_S1706_flow_pred,series_train_R169_flow_pred,series_train_S56_flow_pred,series_train_R129_flow_pred,series_train_S57_flow_pred,series_train_R170_flow_pred,series_train_S1707_flow_pred,series_train_S59_flow_pred,series_train_R130_flow_pred,series_train_R171_flow_pred,series_train_S60_flow_pred,series_train_S61_flow_pred))
 multivariate_time_series_train_pred = to_time_series(multivariate_pred)
 print(multivariate_time_series_train_pred.shape)
 
 #multivariate time series test
-multivariate_test_pred=np.dstack((series_test_S54_speed_pred,series_test_S1706_speed_pred,series_test_S56_speed_pred,series_test_S57_speed_pred,series_test_S1707_speed_pred,series_test_S59_speed_pred,series_test_S60_speed_pred,series_test_S61_speed_pred))
+multivariate_test_pred=np.dstack((series_test_S54_flow_pred,series_test_S1706_flow_pred,series_test_R169_flow_pred,series_test_S56_flow_pred,series_test_R129_flow_pred,series_test_S57_flow_pred,series_test_R170_flow_pred,series_test_S1707_flow_pred,series_test_S59_flow_pred,series_test_R130_flow_pred,series_test_R171_flow_pred,series_test_S60_flow_pred,series_test_S61_flow_pred))
 multivariate_time_series_test_pred = to_time_series(multivariate_test_pred)
 print(multivariate_time_series_test_pred.shape)
 
@@ -352,3 +352,196 @@ plt.xlabel(xlabel='hours of the day')
 plt.title(label='13/2/2014 S54 window size of 30 minutes, 3 clusters')
 plt.legend()
 plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],30,10,10)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S54_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 08:00:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54 loops, window size of 1 hour')
+plt.legend()
+plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],30,5,10)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S54_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 08:00:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54 loops, window size of 30 minutes')
+plt.legend()
+plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],30,15,10)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S54_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 08:00:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54 loops, window size of 1 hour and 30 minutes')
+plt.legend()
+plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],115,10,10)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S54_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 16:30:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54 loops, window size of 1 hour')
+plt.legend()
+plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],115,10,10)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S54_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 16:30:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54 loops, window size of 1 hour')
+plt.legend()
+plt.show()
+
+first_day=SVR_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],30,10,10,8)
+#cluster
+first_day[0]
+#prediction
+first_day[1]
+#ground_truth
+first_day[2]
+
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S1707_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S1707_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 08:00:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S1707, window size of 1 hour ')
+plt.legend()
+plt.show()
+
+
+
+first_day=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],30,10,10,12)
+#rescale with respect to the loop analyzed
+Y_pred=series_test_S61_flow[1].inverse_transform(first_day[1])
+Y_test=series_test_S61_flow[1].inverse_transform(first_day[2])
+#plot
+x=index_third_period=pd.date_range('2014-02-10 08:00',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S61, window size of 1 hour')
+plt.legend()
+plt.show()
+
+
+first_day=classification_pred(multivariate_time_series_train,multivariate_time_series_test[0:1,:,:],115,10)
+#prediction
+first_day[2]
+#ground_truth
+first_day[3].shape
+columns = ['S54 flow (veh/h)','S1706 flow (veh/h)', 'R169 flow (veh/h)','S56 flow (veh/h)','R129 flow (veh/h)', 'S57 flow (veh/h)','R170 flow (veh/h)','S1707 flow (veh/h)', 'S59 flow (veh/h)','R130 flow (veh/h)','R171 flow (veh/h)', 'S60 flow (veh/h)','S61 flow (veh/h)']
+index=pd.date_range("8:00", periods=10, freq="6min")
+df_0_morning = pd.DataFrame(index=index.time, columns=columns)
+Y_pred_S54=series_test_S54_flow[1].inverse_transform(first_day[2][:,:,0])
+Y_test=series_test_S54_flow[1].inverse_transform(first_day[3][:,0:1])
+df_0_morning['S54 flow (veh/h)']=y_pred_S54
+#plot
+x=index_third_period=pd.date_range('2014-02-10 16:30',periods=10, freq='6min')
+len(x)
+x=x.strftime("%H:%M")
+plt.plot(x,np.concatenate(Y_pred_S54,axis=0),'r-',label='prediction')
+plt.plot(x,np.concatenate(Y_test,axis=0),'b-',label='ground truth')
+plt.xticks(rotation=30,size=8)
+plt.ylabel(ylabel='veh/h')
+plt.xlabel(xlabel='hours of the day')
+plt.title(label='10/02/2014 S54, window size of 1 hour')
+plt.legend()
+plt.show()
+
+
+
+
+

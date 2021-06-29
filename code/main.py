@@ -15,7 +15,11 @@ from toolz.itertoolz import sliding_window, partition
 from tslearn.utils import to_time_series, to_time_series_dataset
 ##### strategy for normalization 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from tslearn.metrics import soft_dtw, gamma_soft_dtw
+from tslearn.metrics import soft_dtw, gamma_soft_dtw,dtw
+from datetime import datetime
+from sklearn.multioutput import MultiOutputRegressor
+from tslearn.generators import random_walks
+from sklearn.pipeline import Pipeline
 
 #IMPORT DATA S54  
 S54= pd.read_excel(r"TrafficData_I35W_2013.xlsx",sheet_name=0) 
@@ -528,12 +532,12 @@ print('Min: %f, Max: %f' % (series_test_S61_density[1].data_min_, series_test_S6
 
 
 #multivariate time series train
-multivariate=np.dstack((series_train_S54_flow[0],series_train_S54_speed[0],series_train_S1706_flow[0],series_train_S1706_speed[0],series_train_R169_flow[0],series_train_R169_speed[0],series_train_S56_flow[0],series_train_S56_speed[0],series_train_R129_flow[0],series_train_R129_speed[0],series_train_S57_flow[0],series_train_S57_speed[0],series_train_R170_flow[0],series_train_R170_speed[0],series_train_S1707_flow[0],series_train_S1707_speed[0],series_train_S59_flow[0],series_train_S59_speed[0],series_train_R130_flow[0],series_train_R130_speed[0],series_train_R171_flow[0],series_train_R171_speed[0],series_train_S60_flow[0],series_train_S60_speed[0],series_train_S61_flow[0],series_train_S61_speed[0]))
+multivariate=np.dstack((series_train_S54_flow[0],series_train_S1706_flow[0],series_train_R169_flow[0],series_train_S56_flow[0],series_train_R129_flow[0],series_train_S57_flow[0],series_train_R170_flow[0],series_train_S1707_flow[0],series_train_S59_flow[0],series_train_R130_flow[0],series_train_R171_flow[0],series_train_S60_flow[0],series_train_S61_flow[0]))
 multivariate_time_series_train = to_time_series(multivariate)
 print(multivariate_time_series_train.shape)
 
 #multivariate time series test
-multivariate_test=np.dstack((series_test_S54_flow[0],series_test_S54_speed[0],series_test_S1706_flow[0],series_test_S1706_speed[0],series_test_R169_flow[0],series_test_R169_speed[0],series_test_S56_flow[0],series_test_S56_speed[0],series_test_R129_flow[0],series_test_R129_speed[0],series_test_S57_flow[0],series_test_S57_speed[0],series_test_R170_flow[0],series_test_R170_speed[0],series_test_S1707_flow[0],series_test_S1707_speed[0],series_test_S59_flow[0],series_test_S59_speed[0],series_test_R130_flow[0],series_test_R130_speed[0],series_test_R171_flow[0],series_test_R171_speed[0],series_test_S60_flow[0],series_test_S60_speed[0],series_test_S61_flow[0],series_test_S61_speed[0]))
+multivariate_test=np.dstack((series_test_S54_flow[0],series_test_S1706_flow[0],series_test_R169_flow[0],series_test_S56_flow[0],series_test_R129_flow[0],series_test_S57_flow[0],series_test_R170_flow[0],series_test_S1707_flow[0],series_test_S59_flow[0],series_test_R130_flow[0],series_test_R171_flow[0],series_test_S60_flow[0],series_test_S61_flow[0]))
 multivariate_time_series_test = to_time_series(multivariate_test)
 print(multivariate_time_series_test.shape)
 
@@ -542,7 +546,7 @@ print(multivariate_time_series_test.shape)
 from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
 from tslearn.metrics import gamma_soft_dtw
 
-score_g, df = optimalK(multivariate_time_series_test, nrefs=5, maxClusters=7)
+score_g, df = optimalK(multivariate_time_series_train, nrefs=5, maxClusters=7)
 
 plt.plot(df['clusterCount'], df['gap'], linestyle='--', marker='o', color='b');
 plt.xlabel('K');
@@ -553,7 +557,7 @@ plt.title('Gap Statistic vs. number of cluster, test set');
 gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0) 
 
 #fit the model on train data 
-km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train)
+km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train)
 
 #predict train 
 prediction_train=km_dba.fit_predict(multivariate_time_series_train,y=None)
@@ -629,4 +633,7 @@ centroids.shape
 
 
 #day nearest to the cluster centroid 
-closest(multivariate_time_series_train,prediction_train,centroids,1,events_train)
+closest(multivariate_time_series_train,prediction_train,centroids,3,events_train)
+
+
+
