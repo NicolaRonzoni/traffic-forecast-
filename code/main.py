@@ -631,7 +631,41 @@ centroids=km_dba.cluster_centers_
 
 centroids.shape
 
+#dataframe to select days which belogns to the closest cluster 
+len(index_train)
+columns=['days','k']
+index=np.arange(357)
+dataframe_train=pd.DataFrame(columns=columns,index=index)
+dataframe_train['days']=index_train
+dataframe_train['k']=prediction_train
+dataframe_train
+#if k=0 
+days_cluster=dataframe_train[dataframe_train['k']==0].index
 
+#multivariate time series train speed
+#check if multivariate_speed already exist
+multivariate_speed=np.dstack((series_train_S54_speed[0],series_train_S1706_speed[0],series_train_R169_speed[0],series_train_S56_speed[0],series_train_R129_speed[0],series_train_S57_speed[0],series_train_R170_speed[0],series_train_S1707_speed[0],series_train_S59_speed[0],series_train_R130_speed[0],series_train_R171_speed[0],series_train_S60_speed[0],series_train_S61_speed[0]))
+multivariate_time_series_train_speed = to_time_series(multivariate_speed)
+print(multivariate_time_series_train_speed.shape)
+
+#multivariate time series test speed
+multivariate_test_speed=np.dstack((series_test_S54_speed[0],series_test_S1706_speed[0],series_test_R169_speed[0],series_test_S56_speed[0],series_test_R129_speed[0],series_test_S57_speed[0],series_test_R170_speed[0],series_test_S1707_speed[0],series_test_S59_speed[0],series_test_R130_speed[0],series_test_R171_speed[0],series_test_S60_speed[0],series_test_S61_speed[0]))
+multivariate_time_series_test_speed = to_time_series(multivariate_test_speed)
+print(multivariate_time_series_test_speed.shape)
+
+pd.set_option('display.max_seq_items', 200)
+print(days_cluster)
+multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(10,  17,  24,  37,  38,  43,  51,  57,  58,  65,  66,  70,  71,
+             72,  73,  78,  79,  85,  86,  92,  93, 101, 105, 106, 113, 114,
+            119, 121, 122, 125, 126, 127, 128, 132, 133, 134, 135, 140, 141,
+            142, 143, 147, 148, 149, 153, 154, 155, 156, 160, 161, 162, 167,
+            168, 171, 177, 178, 184, 185, 191, 198, 199, 200, 205, 206, 212,
+            213, 219, 220, 226, 227, 228, 232, 233, 240, 241, 244, 245, 246,
+            251, 252, 253, 257, 258, 259, 265, 266, 267, 271, 272, 273, 274,
+            279, 280, 281, 286, 287, 288, 292, 293, 294, 295, 301, 302, 307,
+            308, 309, 314, 315, 321, 322, 331, 337, 338, 343, 344),:,:]
+
+multivariate_time_series_train_speed_subset.shape
 #day nearest to the cluster centroid 
 closest(multivariate_time_series_train,prediction_train,centroids,3,events_train)
 

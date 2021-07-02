@@ -518,5 +518,41 @@ def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
     return cluster, Y_pred, Y_test
 
 
+def classification_pred_speed(train,test,starting_time,window_future):
+    XY_train=train[:,0:starting_time+window_future,:]
+    X_test=test[:,0:starting_time,:]
+    Y_test=test[0,starting_time:starting_time+window_future,:]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    for j in range(0,train.shape[0]):
+        sim1 = dtw(X_test[0,:,:],XY_train[j,:,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1[df1.sim1==df1.sim1.min()].ts
+    print(ts)
+    #select the time series closest to the test and return the window_future as prediction
+    Y_pred=train[ts.index,starting_time:starting_time+window_future,:]
+    return ts, Y_pred, Y_test
+
+def SVR_pred_R(train,test,starting_time,window_past,window_future,loop):
+    X_train=train[:,starting_time-window_past:starting_time,:]
+    X_train=X_train.reshape(train.shape[0],-1)
+    Y_train=train[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    X_test=X_test.reshape(1,-1)
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = TimeSeriesSVR(kernel="gak", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train)
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return  Y_pred, Y_test
+
+    
+
+
+
 
 
