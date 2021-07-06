@@ -635,13 +635,14 @@ centroids.shape
 len(index_train)
 columns=['days','k']
 index=np.arange(357)
+len(index)
 dataframe_train=pd.DataFrame(columns=columns,index=index)
 dataframe_train['days']=index_train
 dataframe_train['k']=prediction_train
 dataframe_train
 #if k=0 
 days_cluster=dataframe_train[dataframe_train['k']==0].index
-
+len(days_cluster)
 #multivariate time series train speed
 #check if multivariate_speed already exist
 multivariate_speed=np.dstack((series_train_S54_speed[0],series_train_S1706_speed[0],series_train_R169_speed[0],series_train_S56_speed[0],series_train_R129_speed[0],series_train_S57_speed[0],series_train_R170_speed[0],series_train_S1707_speed[0],series_train_S59_speed[0],series_train_R130_speed[0],series_train_R171_speed[0],series_train_S60_speed[0],series_train_S61_speed[0]))

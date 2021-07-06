@@ -25,7 +25,7 @@ from tslearn.metrics import soft_dtw, gamma_soft_dtw,dtw
 from sklearn.multioutput import MultiOutputRegressor
 from tslearn.generators import random_walks
 from sklearn.pipeline import Pipeline
-
+from scipy.spatial import distance
 
 #speed km/h
 def data_split(data):
@@ -275,6 +275,32 @@ plt.plot(df['clusterCount'], df['gap'], linestyle='--', marker='o', color='b');
 plt.xlabel('K');
 plt.ylabel('Gap Statistic');
 plt.title('Gap Statistic vs. K');
+
+def dtw(s, t, window,window_weight):
+    n, m = len(s), len(t)
+    w = np.max([window, abs(n-m)])
+    dtw_matrix = np.zeros((n+1, m+1))
+    
+    for i in range(n+1):
+        for j in range(m+1):
+            dtw_matrix[i, j] = np.inf
+    dtw_matrix[0, 0] = 0
+    
+    for i in range(1, n+1):
+        for j in range(np.max([1, i-w]), np.min([m, i+w])+1):
+            dtw_matrix[i, j] = 0
+    
+    for i in range(1, n+1):
+        for j in range(np.max([1, i-w]), np.min([m, i+w])+1):
+            cost = distance.euclidean(s[i-1], t[j-1])**2
+            last_min = np.min([dtw_matrix[i-1, j], dtw_matrix[i, j-1], dtw_matrix[i-1, j-1]]) 
+            # take last min from a square box weighing
+            if i in range(n+1-window_weight,n+1):
+                 dtw_matrix[i, j] = cost + (1+(1/2)**(window_weight))*last_min
+                 window_weight=window_weight-1
+            else :
+                dtw_matrix[i, j] = cost + last_min
+    return dtw_matrix[n, m]
 
 #find the day closest to the centroid 
 def closest(multivariate_time_series_train,prediction_train,centroids,k,events_train):
@@ -534,7 +560,7 @@ def classification_pred_speed(train,test,starting_time,window_future):
     Y_pred=train[ts.index,starting_time:starting_time+window_future,:]
     return ts, Y_pred, Y_test
 
-def SVR_pred_R(train,test,starting_time,window_past,window_future,loop):
+def SVR_pred_d_speed(train,test,starting_time,window_past,window_future,loop):
     X_train=train[:,starting_time-window_past:starting_time,:]
     X_train=X_train.reshape(train.shape[0],-1)
     Y_train=train[:,starting_time:starting_time+window_future,loop]
@@ -548,7 +574,67 @@ def SVR_pred_R(train,test,starting_time,window_past,window_future,loop):
     gs_svr = gs_svr.fit(X_train,Y_train)
     print(gs_svr.best_estimator_) 
     Y_pred=gs_svr.predict(X_test)
+    
     return  Y_pred, Y_test
+
+from sklearn.multioutput import RegressorChain,ClassifierChain
+from sklearn.svm import SVR
+
+
+def SVR_pred_d_speed_chain(train,test,starting_time,window_past,window_future,loop):
+    X_train=train[:,starting_time-window_past:starting_time,loop]
+    Y_train=train[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,loop]
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = SVR(kernel="rbf",gamma='auto')
+    pipe_svr = Pipeline([('reg',MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train)
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return  Y_pred, Y_test
+
+def SVR_pred_d_speed_chain(train,test,starting_time,window_past,window_future,loop):
+    X_train=train[:,starting_time-window_past:starting_time,:]
+    X_train=X_train.reshape(train.shape[0],-1)
+    Y_train=train[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    X_test=X_test.reshape(1,-1)
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = SVR(kernel="rbf", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train,reg__sample_weight= np.random.rand(115))
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return  Y_pred, Y_test
+
+################# NO SENSE #######################################
+def SVR_pred_d_speed_chain(train,test,starting_time,window_past,window_future,loop):
+    X_train=train[:,starting_time-window_past:starting_time,:]
+    X_train=np.moveaxis(X_train,0,-1)
+    X_train=X_train.reshape(X_train.shape[0],-1)
+    Y_train=train[:,starting_time:starting_time+window_future,loop]
+    Y_train=Y_train.transpose()
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    X_test=np.moveaxis(X_test,0,-1)
+    X_test=X_test.reshape(X_train.shape[0],-1)
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    Y_test=Y_test.transpose()
+    reg = SVR(kernel="rbf", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train,reg__sample_weight=np.array([1+1/1024,1+1/512,1+1/256,1+1/128,1+1/64,1+1/32,1+1/16,1+1/8,1+1/4,1+1/2]))
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return  Y_pred, Y_test
+
+
+
+
 
     
 
