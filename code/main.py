@@ -641,7 +641,7 @@ dataframe_train['days']=index_train
 dataframe_train['k']=prediction_train
 dataframe_train
 #if k=0 
-days_cluster=dataframe_train[dataframe_train['k']==0].index
+days_cluster=dataframe_train[dataframe_train['k']==2].index
 len(days_cluster)
 #multivariate time series train speed
 #check if multivariate_speed already exist
@@ -656,15 +656,11 @@ print(multivariate_time_series_test_speed.shape)
 
 pd.set_option('display.max_seq_items', 200)
 print(days_cluster)
-multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(10,  17,  24,  37,  38,  43,  51,  57,  58,  65,  66,  70,  71,
-             72,  73,  78,  79,  85,  86,  92,  93, 101, 105, 106, 113, 114,
-            119, 121, 122, 125, 126, 127, 128, 132, 133, 134, 135, 140, 141,
-            142, 143, 147, 148, 149, 153, 154, 155, 156, 160, 161, 162, 167,
-            168, 171, 177, 178, 184, 185, 191, 198, 199, 200, 205, 206, 212,
-            213, 219, 220, 226, 227, 228, 232, 233, 240, 241, 244, 245, 246,
-            251, 252, 253, 257, 258, 259, 265, 266, 267, 271, 272, 273, 274,
-            279, 280, 281, 286, 287, 288, 292, 293, 294, 295, 301, 302, 307,
-            308, 309, 314, 315, 321, 322, 331, 337, 338, 343, 344),:,:]
+multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(45,  59,  80,  87,  94, 115, 129, 136, 150, 157, 163, 164, 169,
+            170, 172, 173, 174, 179, 186, 187, 188, 192, 193, 194, 195, 201,
+            202, 207, 208, 209, 214, 215, 216, 221, 222, 223, 229, 230, 234,
+            235, 242, 247, 254, 260, 261, 268, 275, 282, 289, 296, 303, 310,
+            317, 345),:,:]
 
 multivariate_time_series_train_speed_subset.shape
 #day nearest to the cluster centroid 
