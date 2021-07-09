@@ -329,18 +329,13 @@ from statistics import mean
 
 p_grid = {"C": [0.1,1,10,100], "epsilon":[0.01,0.1,1,10]}
 
-def walk_forward_validation(train,test,window_size,starting_time):
+def walk_forward_validation(train,test,window_size,starting_time,loop):
     #define a starting split X and Y for test set 
     X_test=test[:,0:starting_time,:]
-    Y_test=test[:,starting_time:,:]  
-    #initialize the lists
-    MSE_train=[]
-    MSE_test=[]
-    PRED_train=[]
-    PRED_test=[]
-    GROUND_TRUTH_train=[]
+    Y_test=test[:,starting_time:,:]
     GROUND_TRUTH_test=[]
-    for t in range(0,30): # number of prediction from starting point to the end of the day
+    PRED_test=[]
+    for t in range(0,10): # number of prediction from starting point
         # take an observation forward: len(X_train)=len(X_test)+1 
         train_set=train[:,0:starting_time+1+t,:]
         #select only most window_size+1 recent observations for train 
@@ -348,53 +343,40 @@ def walk_forward_validation(train,test,window_size,starting_time):
         #select only most window_size recent observations for test
         X_test=X_test[:,-window_size:,:]
         #clustering
-        km_dba = TimeSeriesKMeans(n_clusters=3, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
+        km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=XY_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(XY_train)
         #assign the day you want to predict to a cluster
         prediction_train=km_dba.fit_predict(XY_train,y=None)
         prediction_test_cluster= km_dba.predict(X_test)
+        print(prediction_test_cluster)
         #select train observations that belongs to the same cluster that we want to predict
         cluster_train=XY_train[prediction_train==prediction_test_cluster]
         #divide X and Y in the train set 
         X_train=cluster_train[:,-window_size-1:-1,:]
         Y_train=cluster_train[:,-1:,:]
         #select the detector we want to predict
-        x_train=X_train[:,:,:]
-        x_test=X_test[:,:,:]
+        x_train=X_train.reshape(X_train.shape[0],-1)
+        x_test=X_test.reshape(1,-1)
         #select the target Train 
-        y_train=Y_train[:,0,2]
-        #rescale the target Train 
-        GROUND_TRUTH_train.append(y_train)
+        y_train=Y_train[:,0,loop]
         #select the target Test
-        y_test=Y_test[:,t,2]
+        y_test=Y_test[:,t,loop]
         #rescale the target Test 
         GROUND_TRUTH_test.append(y_test)
         #Grid search to tune the parameters
-        reg = TimeSeriesSVR(kernel="gak", gamma="auto")
+        reg =SVR(kernel="rbf", gamma="auto")
         clf = GridSearchCV(estimator=reg, param_grid=p_grid, scoring='neg_mean_squared_error',refit=True,cv=3)
         #fit the model with the best found parameters
         clf.fit(x_train,y_train)
-        #prediction for the train
-        y_hat_train=clf.predict(x_train)
         # prediction for the test 
         y_hat_test=clf.predict(x_test)
-        #rescale the prediction of the Train 
-        PRED_train.append(y_hat_train)
         #rescale the prediction of the Test 
         PRED_test.append(y_hat_test)
-        #compute the mean square error 
-        mse_train=mean_squared_error(y_train,y_hat_train)
-        mse_test=mean_squared_error(y_test,y_hat_test)
-        MSE_train.append(mse_train)
-        MSE_test.append(mse_test)
         #Add the curent observation to the X set 
         obs_test=Y_test[:,t:t+1,:]
         X_test=np.hstack((X_test,obs_test))
-        print(mse_train,mse_test,prediction_test_cluster)
     PRED_test=np.concatenate(PRED_test,axis=0)
-    PRED_train=np.concatenate(PRED_train,axis=0)
-    GROUND_TRUTH_train=np.concatenate(GROUND_TRUTH_train,axis=0)
     GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
-    return mean(MSE_train), mean(MSE_test), PRED_train, PRED_test, GROUND_TRUTH_train, GROUND_TRUTH_test
+    return PRED_test, GROUND_TRUTH_test
  
 
 
@@ -512,7 +494,7 @@ def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
     pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
     grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
     gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
-    gs_svr = gs_svr.fit(X_train,Y_train,reg__sample_weight=np)
+    gs_svr = gs_svr.fit(X_train,Y_train)
     print(gs_svr.best_estimator_) 
     Y_pred=gs_svr.predict(X_test)
     return cluster, Y_pred, Y_test

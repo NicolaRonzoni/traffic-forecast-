@@ -516,15 +516,15 @@ plt.legend()
 plt.show()
 
 
-first_day=classification_pred_same(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,10,20)
+first_day=classification_pred_same(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,10,20)
 #prediction
 first_day[2].shape
 #ground_truth
 first_day[3].shape
 columns = ['S54 flow (veh/h)','S54 flow (veh/h) ground truth','S1706 flow (veh/h)','S1706 flow (veh/h) ground truth', 'R169 flow (veh/h)','R169 flow (veh/h) ground truth','S56 flow (veh/h)','S56 flow (veh/h) ground truth','R129 flow (veh/h)','R129 flow (veh/h) ground truth', 'S57 flow (veh/h)','S57 flow (veh/h) ground truth','R170 flow (veh/h)','R170 flow (veh/h) ground truth','S1707 flow (veh/h)','S1707 flow (veh/h) ground truth', 'S59 flow (veh/h)','S59 flow (veh/h) ground truth','R130 flow (veh/h)','R130 flow (veh/h) ground truth','R171 flow (veh/h)','R171 flow (veh/h) ground truth', 'S60 flow (veh/h)','S60 flow (veh/h) ground truth','S61 flow (veh/h)','S61 flow (veh/h) ground truth']
-index=pd.date_range("08:00", periods=10, freq="6min")
-df_4= pd.DataFrame(index=index.time, columns=columns)
-df_4
+index=pd.date_range("14:30", periods=10, freq="6min")
+df_3= pd.DataFrame(index=index.time, columns=columns)
+df_3
 
 Y_pred_S54=series_train_S54_flow[1].inverse_transform(first_day[2][:,:,0])
 Y_test_S54=series_test_S54_flow[1].inverse_transform(first_day[3][:,0:1])
@@ -568,33 +568,33 @@ error_S61=math.sqrt(mean_squared_error(Y_test_S61,Y_pred_S61.reshape(-1,1)))
 
 error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,error_R170,error_S1707,error_S59,error_R130,error_R171,error_S60,error_S61])
 
-df_4['S54 flow (veh/h)']=Y_pred_S54.reshape(-1,1)
-df_4['S54 flow (veh/h) ground truth']=Y_test_S54
-df_4['S1706 flow (veh/h)']=Y_pred_S1706.reshape(-1,1)
-df_4['S1706 flow (veh/h) ground truth']=Y_test_S1706
-df_4['R169 flow (veh/h)']=Y_pred_R169.reshape(-1,1)
-df_4['R169 flow (veh/h) ground truth']=Y_test_R169
-df_4['S56 flow (veh/h)']=Y_pred_S56.reshape(-1,1)
-df_4['S56 flow (veh/h) ground truth']=Y_test_S56
-df_4['R129 flow (veh/h)']=Y_pred_R129.reshape(-1,1)
-df_4['R129 flow (veh/h) ground truth']=Y_test_R129
-df_4['S57 flow (veh/h)']=Y_pred_S57.reshape(-1,1)
-df_4['S57 flow (veh/h) ground truth']=Y_test_S57
-df_4['R170 flow (veh/h)']=Y_pred_R170.reshape(-1,1)
-df_4['R170 flow (veh/h) ground truth']=Y_test_R170
-df_4['S1707 flow (veh/h)']=Y_pred_S1707.reshape(-1,1)
-df_4['S1707 flow (veh/h) ground truth']=Y_test_S1707
-df_4['S59 flow (veh/h)']=Y_pred_S59.reshape(-1,1)
-df_4['S59 flow (veh/h) ground truth']=Y_test_S59
-df_4['R130 flow (veh/h)']=Y_pred_R130.reshape(-1,1)
-df_4['R130 flow (veh/h) ground truth']=Y_test_R130
-df_4['R171 flow (veh/h)']=Y_pred_R171.reshape(-1,1)
-df_4['R171 flow (veh/h) ground truth']=Y_test_R171
-df_4['S60 flow (veh/h)']=Y_pred_S60.reshape(-1,1)
-df_4['S60 flow (veh/h) ground truth']=Y_test_S60
-df_4['S61 flow (veh/h)']=Y_pred_S61.reshape(-1,1)
-df_4['S61 flow (veh/h) ground truth']=Y_test_S61
-df_4
+df_3['S54 flow (veh/h)']=Y_pred_S54.reshape(-1,1)
+df_3['S54 flow (veh/h) ground truth']=Y_test_S54
+df_3['S1706 flow (veh/h)']=Y_pred_S1706.reshape(-1,1)
+df_3['S1706 flow (veh/h) ground truth']=Y_test_S1706
+df_3['R169 flow (veh/h)']=Y_pred_R169.reshape(-1,1)
+df_3['R169 flow (veh/h) ground truth']=Y_test_R169
+df_3['S56 flow (veh/h)']=Y_pred_S56.reshape(-1,1)
+df_3['S56 flow (veh/h) ground truth']=Y_test_S56
+df_3['R129 flow (veh/h)']=Y_pred_R129.reshape(-1,1)
+df_3['R129 flow (veh/h) ground truth']=Y_test_R129
+df_3['S57 flow (veh/h)']=Y_pred_S57.reshape(-1,1)
+df_3['S57 flow (veh/h) ground truth']=Y_test_S57
+df_3['R170 flow (veh/h)']=Y_pred_R170.reshape(-1,1)
+df_3['R170 flow (veh/h) ground truth']=Y_test_R170
+df_3['S1707 flow (veh/h)']=Y_pred_S1707.reshape(-1,1)
+df_3['S1707 flow (veh/h) ground truth']=Y_test_S1707
+df_3['S59 flow (veh/h)']=Y_pred_S59.reshape(-1,1)
+df_3['S59 flow (veh/h) ground truth']=Y_test_S59
+df_3['R130 flow (veh/h)']=Y_pred_R130.reshape(-1,1)
+df_3['R130 flow (veh/h) ground truth']=Y_test_R130
+df_3['R171 flow (veh/h)']=Y_pred_R171.reshape(-1,1)
+df_3['R171 flow (veh/h) ground truth']=Y_test_R171
+df_3['S60 flow (veh/h)']=Y_pred_S60.reshape(-1,1)
+df_3['S60 flow (veh/h) ground truth']=Y_test_S60
+df_3['S61 flow (veh/h)']=Y_pred_S61.reshape(-1,1)
+df_3['S61 flow (veh/h) ground truth']=Y_test_S61
+df_3
 
 
 
@@ -621,19 +621,19 @@ df_4.to_excel(writer, sheet_name='10-9-2014 afternoon')
 writer.save()
 
 
-first_day_S54=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,0)
-first_day_S1706=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,1)
-first_day_R169=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,2)
-first_day_S56=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,3)
-first_day_R129=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,4)
-first_day_S57=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,5)
-first_day_R170=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,6)
-first_day_S1707=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,7)
-first_day_S59=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,8)
-first_day_R130=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,9)
-first_day_R171=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,10)
-first_day_S60=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,11)
-first_day_S61=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,5,10,12)
+first_day_S54=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,0)
+first_day_S1706=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,1)
+first_day_R169=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,2)
+first_day_S56=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,3)
+first_day_R129=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,4)
+first_day_S57=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,5)
+first_day_R170=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,6)
+first_day_S1707=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,7)
+first_day_S59=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,8)
+first_day_R130=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,9)
+first_day_R171=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,10)
+first_day_S60=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,11)
+first_day_S61=SVR_pred_d(multivariate_time_series_train,multivariate_time_series_test[18:19,:,:],95,5,10,12)
 
 
 Y_pred_S54=series_test_S54_flow[1].inverse_transform(first_day_S54[1])
@@ -680,52 +680,78 @@ error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,erro
 
 
 columns = ['S54 flow (veh/h)','S54 flow (veh/h) ground truth','S1706 flow (veh/h)','S1706 flow (veh/h) ground truth', 'R169 flow (veh/h)','R169 flow (veh/h) ground truth','S56 flow (veh/h)','S56 flow (veh/h) ground truth','R129 flow (veh/h)','R129 flow (veh/h) ground truth', 'S57 flow (veh/h)','S57 flow (veh/h) ground truth','R170 flow (veh/h)','R170 flow (veh/h) ground truth','S1707 flow (veh/h)','S1707 flow (veh/h) ground truth', 'S59 flow (veh/h)','S59 flow (veh/h) ground truth','R130 flow (veh/h)','R130 flow (veh/h) ground truth','R171 flow (veh/h)','R171 flow (veh/h) ground truth', 'S60 flow (veh/h)','S60 flow (veh/h) ground truth','S61 flow (veh/h)','S61 flow (veh/h) ground truth']
-index=pd.date_range("16:30", periods=10, freq="6min")
-df_23_afternoon_1 = pd.DataFrame(index=index.time, columns=columns)
-df_23_afternoon_1
-df_23_afternoon_1['S54 flow (veh/h)']=Y_pred_S54.reshape(-1,1)
-df_23_afternoon_1['S54 flow (veh/h) ground truth']=Y_test_S54.reshape(-1,1)
-df_23_afternoon_1['S1706 flow (veh/h)']=Y_pred_S1706.reshape(-1,1)
-df_23_afternoon_1['S1706 flow (veh/h) ground truth']=Y_test_S1706.reshape(-1,1)
-df_23_afternoon_1['R169 flow (veh/h)']=Y_pred_R169.reshape(-1,1)
-df_23_afternoon_1['R169 flow (veh/h) ground truth']=Y_test_R169.reshape(-1,1)
-df_23_afternoon_1['S56 flow (veh/h)']=Y_pred_S56.reshape(-1,1)
-df_23_afternoon_1['S56 flow (veh/h) ground truth']=Y_test_S56.reshape(-1,1)
-df_23_afternoon_1['R129 flow (veh/h)']=Y_pred_R129.reshape(-1,1)
-df_23_afternoon_1['R129 flow (veh/h) ground truth']=Y_test_R129.reshape(-1,1)
-df_23_afternoon_1['S57 flow (veh/h)']=Y_pred_S57.reshape(-1,1)
-df_23_afternoon_1['S57 flow (veh/h) ground truth']=Y_test_S57.reshape(-1,1)
-df_23_afternoon_1['R170 flow (veh/h)']=Y_pred_R170.reshape(-1,1)
-df_23_afternoon_1['R170 flow (veh/h) ground truth']=Y_test_R170.reshape(-1,1)
-df_23_afternoon_1['S1707 flow (veh/h)']=Y_pred_S1707.reshape(-1,1)
-df_23_afternoon_1['S1707 flow (veh/h) ground truth']=Y_test_S1707.reshape(-1,1)
-df_23_afternoon_1['S59 flow (veh/h)']=Y_pred_S59.reshape(-1,1)
-df_23_afternoon_1['S59 flow (veh/h) ground truth']=Y_test_S59.reshape(-1,1)
-df_23_afternoon_1['R130 flow (veh/h)']=Y_pred_R130.reshape(-1,1)
-df_23_afternoon_1['R130 flow (veh/h) ground truth']=Y_test_R130.reshape(-1,1)
-df_23_afternoon_1['R171 flow (veh/h)']=Y_pred_R171.reshape(-1,1)
-df_23_afternoon_1['R171 flow (veh/h) ground truth']=Y_test_R171.reshape(-1,1)
-df_23_afternoon_1['S60 flow (veh/h)']=Y_pred_S60.reshape(-1,1)
-df_23_afternoon_1['S60 flow (veh/h) ground truth']=Y_test_S60.reshape(-1,1)
-df_23_afternoon_1['S61 flow (veh/h)']=Y_pred_S61.reshape(-1,1)
-df_23_afternoon_1['S61 flow (veh/h) ground truth']=Y_test_S61.reshape(-1,1)
-df_23_afternoon_1
+index=pd.date_range("14:30", periods=10, freq="6min")
+df_13 = pd.DataFrame(index=index.time, columns=columns)
+df_13
+df_13['S54 flow (veh/h)']=Y_pred_S54.reshape(-1,1)
+df_13['S54 flow (veh/h) ground truth']=Y_test_S54.reshape(-1,1)
+df_13['S1706 flow (veh/h)']=Y_pred_S1706.reshape(-1,1)
+df_13['S1706 flow (veh/h) ground truth']=Y_test_S1706.reshape(-1,1)
+df_13['R169 flow (veh/h)']=Y_pred_R169.reshape(-1,1)
+df_13['R169 flow (veh/h) ground truth']=Y_test_R169.reshape(-1,1)
+df_13['S56 flow (veh/h)']=Y_pred_S56.reshape(-1,1)
+df_13['S56 flow (veh/h) ground truth']=Y_test_S56.reshape(-1,1)
+df_13['R129 flow (veh/h)']=Y_pred_R129.reshape(-1,1)
+df_13['R129 flow (veh/h) ground truth']=Y_test_R129.reshape(-1,1)
+df_13['S57 flow (veh/h)']=Y_pred_S57.reshape(-1,1)
+df_13['S57 flow (veh/h) ground truth']=Y_test_S57.reshape(-1,1)
+df_13['R170 flow (veh/h)']=Y_pred_R170.reshape(-1,1)
+df_13['R170 flow (veh/h) ground truth']=Y_test_R170.reshape(-1,1)
+df_13['S1707 flow (veh/h)']=Y_pred_S1707.reshape(-1,1)
+df_13['S1707 flow (veh/h) ground truth']=Y_test_S1707.reshape(-1,1)
+df_13['S59 flow (veh/h)']=Y_pred_S59.reshape(-1,1)
+df_13['S59 flow (veh/h) ground truth']=Y_test_S59.reshape(-1,1)
+df_13['R130 flow (veh/h)']=Y_pred_R130.reshape(-1,1)
+df_13['R130 flow (veh/h) ground truth']=Y_test_R130.reshape(-1,1)
+df_13['R171 flow (veh/h)']=Y_pred_R171.reshape(-1,1)
+df_13['R171 flow (veh/h) ground truth']=Y_test_R171.reshape(-1,1)
+df_13['S60 flow (veh/h)']=Y_pred_S60.reshape(-1,1)
+df_13['S60 flow (veh/h) ground truth']=Y_test_S60.reshape(-1,1)
+df_13['S61 flow (veh/h)']=Y_pred_S61.reshape(-1,1)
+df_13['S61 flow (veh/h) ground truth']=Y_test_S61.reshape(-1,1)
+df_13
 
-df_23_afternoon_1.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/SVR_prediction_10-09-2014_afternoon.xlsx')
+#10/2
+df_10
+#12/2
+df_11
+#22/3
+df_12
+#15/08
+df_13
+#10/09
+df_14
+#
+
+# Create a Pandas Excel writer using XlsxWriter as the engine.
+writer = pd.ExcelWriter('/Users/nronzoni/Desktop/TrafficData Minnesota/SupportVectorRegression_prediction_flow.xlsx', engine='xlsxwriter')
+
+# Write each dataframe to a different worksheet.
+df_10.to_excel(writer, sheet_name='10-2-2014 morning')
+df_11.to_excel(writer, sheet_name='12-2-2014 morning')
+df_12.to_excel(writer, sheet_name='22-3-2014 afternoon')
+df_13.to_excel(writer, sheet_name='15-8-2014 afternoon')
+df_14.to_excel(writer, sheet_name='10-9-2014 morning')
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.save()
+
+
+
 
 
 
 #################################################### speed ##########################
-first_day=classification_pred_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[12:13,:,:],115,10,20)
+first_day=classification_pred_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,10,20)
 
 #prediction
 first_day[1].shape
 #ground_truth
 first_day[2].shape
 columns = ['S54 speed (km/h)','S54 speed (km/h) ground truth','S1706 speed (km/h)','S1706 speed (km/h) ground truth', 'R169 speed (km/h)','R169 speed (km/h) ground truth','S56 speed (km/h)','S56 speed (km/h) ground truth','R129 speed (km/h)','R129 speed (km/h) ground truth', 'S57 speed (km/h)','S57 speed (km/h) ground truth','R170 speed (km/h)','R170 speed (km/h) ground truth','S1707 speed (km/h)','S1707 speed (km/h) ground truth', 'S59 speed (km/h)','S59 speed (km/h) ground truth','R130 speed (km/h)','R130 speed (km/h) ground truth','R171 speed (km/h)','R171 speed (km/h) ground truth', 'S60 speed (km/h)','S60 speed (km/h) ground truth','S61 speed (km/h)','S61 speed (km/h) ground truth']
-index=pd.date_range("16:30", periods=10, freq="6min")
-df_8= pd.DataFrame(index=index.time, columns=columns)
-df_8
+index=pd.date_range("14:30", periods=10, freq="6min")
+df_9= pd.DataFrame(index=index.time, columns=columns)
+df_9
 
 Y_pred_S54=series_train_S54_speed[1].inverse_transform(first_day[1][:,:,0])
 Y_test_S54=series_test_S54_speed[1].inverse_transform(first_day[2][:,0:1])
@@ -772,33 +798,33 @@ error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,erro
 
 
 
-df_8['S54 speed (km/h)']=Y_pred_S54.reshape(-1,1)
-df_8['S54 speed (km/h) ground truth']=Y_test_S54
-df_8['S1706 speed (km/h)']=Y_pred_S1706.reshape(-1,1)
-df_8['S1706 speed (km/h) ground truth']=Y_test_S1706
-df_8['R169 speed (km/h)']=Y_pred_R169.reshape(-1,1)
-df_8['R169 speed (km/h) ground truth']=Y_test_R169
-df_8['S56 speed (km/h)']=Y_pred_S56.reshape(-1,1)
-df_8['S56 speed (km/h) ground truth']=Y_test_S56
-df_8['R129 speed (km/h)']=Y_pred_R129.reshape(-1,1)
-df_8['R129 speed (km/h) ground truth']=Y_test_R129
-df_8['S57 speed (km/h)']=Y_pred_S57.reshape(-1,1)
-df_8['S57 speed (km/h) ground truth']=Y_test_S57
-df_8['R170 speed (km/h)']=Y_pred_R170.reshape(-1,1)
-df_8['R170 speed (km/h) ground truth']=Y_test_R170
-df_8['S1707 speed (km/h)']=Y_pred_S1707.reshape(-1,1)
-df_8['S1707 speed (km/h) ground truth']=Y_test_S1707
-df_8['S59 speed (km/h)']=Y_pred_S59.reshape(-1,1)
-df_8['S59 speed (km/h) ground truth']=Y_test_S59
-df_8['R130 speed (km/h)']=Y_pred_R130.reshape(-1,1)
-df_8['R130 speed (km/h) ground truth']=Y_test_R130
-df_8['R171 speed (km/h)']=Y_pred_R171.reshape(-1,1)
-df_8['R171 speed (km/h) ground truth']=Y_test_R171
-df_8['S60 speed (km/h)']=Y_pred_S60.reshape(-1,1)
-df_8['S60 speed (km/h) ground truth']=Y_test_S60
-df_8['S61 speed (km/h)']=Y_pred_S61.reshape(-1,1)
-df_8['S61 speed (km/h) ground truth']=Y_test_S61
-df_8
+df_9['S54 speed (km/h)']=Y_pred_S54.reshape(-1,1)
+df_9['S54 speed (km/h) ground truth']=Y_test_S54
+df_9['S1706 speed (km/h)']=Y_pred_S1706.reshape(-1,1)
+df_9['S1706 speed (km/h) ground truth']=Y_test_S1706
+df_9['R169 speed (km/h)']=Y_pred_R169.reshape(-1,1)
+df_9['R169 speed (km/h) ground truth']=Y_test_R169
+df_9['S56 speed (km/h)']=Y_pred_S56.reshape(-1,1)
+df_9['S56 speed (km/h) ground truth']=Y_test_S56
+df_9['R129 speed (km/h)']=Y_pred_R129.reshape(-1,1)
+df_9['R129 speed (km/h) ground truth']=Y_test_R129
+df_9['S57 speed (km/h)']=Y_pred_S57.reshape(-1,1)
+df_9['S57 speed (km/h) ground truth']=Y_test_S57
+df_9['R170 speed (km/h)']=Y_pred_R170.reshape(-1,1)
+df_9['R170 speed (km/h) ground truth']=Y_test_R170
+df_9['S1707 speed (km/h)']=Y_pred_S1707.reshape(-1,1)
+df_9['S1707 speed (km/h) ground truth']=Y_test_S1707
+df_9['S59 speed (km/h)']=Y_pred_S59.reshape(-1,1)
+df_9['S59 speed (km/h) ground truth']=Y_test_S59
+df_9['R130 speed (km/h)']=Y_pred_R130.reshape(-1,1)
+df_9['R130 speed (km/h) ground truth']=Y_test_R130
+df_9['R171 speed (km/h)']=Y_pred_R171.reshape(-1,1)
+df_9['R171 speed (km/h) ground truth']=Y_test_R171
+df_9['S60 speed (km/h)']=Y_pred_S60.reshape(-1,1)
+df_9['S60 speed (km/h) ground truth']=Y_test_S60
+df_9['S61 speed (km/h)']=Y_pred_S61.reshape(-1,1)
+df_9['S61 speed (km/h) ground truth']=Y_test_S61
+df_9
 
 
 
@@ -831,19 +857,19 @@ writer.save()
 
 ############################################ SVR prediction speed
 
-first_day_S54=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,0)
-first_day_S1706=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,1)
-first_day_R169=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,2)
-first_day_S56=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,3)
-first_day_R129=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,4)
-first_day_S57=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,5)
-first_day_R170=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,6)
-first_day_S1707=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,7)
-first_day_S59=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,8)
-first_day_R130=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,9)
-first_day_R171=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,10)
-first_day_S60=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,11)
-first_day_S61=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],115,5,10,12)
+first_day_S54=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,0)
+first_day_S1706=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,1)
+first_day_R169=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,2)
+first_day_S56=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,3)
+first_day_R129=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,4)
+first_day_S57=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,5)
+first_day_R170=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,6)
+first_day_S1707=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,7)
+first_day_S59=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,8)
+first_day_R130=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,9)
+first_day_R171=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,10)
+first_day_S60=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,11)
+first_day_S61=SVR_pred_d_speed(multivariate_time_series_train_speed_subset,multivariate_time_series_test_speed[18:19,:,:],95,5,10,12)
 
 
 Y_pred_S54=series_test_S54_speed[1].inverse_transform(first_day_S54[0])
@@ -890,38 +916,299 @@ error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,erro
 
 
 columns = ['S54 speed (km/h)','S54 speed (km/h) ground truth','S1706 speed (km/h)','S1706 speed (km/h) ground truth', 'R169 speed (km/h)','R169 speed (km/h) ground truth','S56 speed (km/h)','S56 speed (km/h) ground truth','R129 speed (km/h)','R129 speed (km/h) ground truth', 'S57 speed (km/h)','S57 speed (km/h) ground truth','R170 speed (km/h)','R170 speed (km/h) ground truth','S1707 speed (km/h)','S1707 speed (km/h) ground truth', 'S59 speed (km/h)','S59 speed (km/h) ground truth','R130 speed (km/h)','R130 speed (km/h) ground truth','R171 speed (km/h)','R171 speed (km/h) ground truth', 'S60 speed (km/h)','S60 speed (km/h) ground truth','S61 speed (km/h)','S61 speed (km/h) ground truth']
-index=pd.date_range("08:00", periods=10, freq="6min")
-df_18_morning_3= pd.DataFrame(index=index.time, columns=columns)
-df_18_morning_3
-df_18_morning_3['S54 speed (km/h)']=Y_pred_S54.reshape(-1,1)
-df_18_morning_3['S54 speed (km/h) ground truth']=Y_test_S54.reshape(-1,1)
-df_18_morning_3['S1706 speed (km/h)']=Y_pred_S1706.reshape(-1,1)
-df_18_morning_3['S1706 speed (km/h) ground truth']=Y_test_S1706.reshape(-1,1)
-df_18_morning_3['R169 speed (km/h)']=Y_pred_R169.reshape(-1,1)
-df_18_morning_3['R169 speed (km/h) ground truth']=Y_test_R169.reshape(-1,1)
-df_18_morning_3['S56 speed (km/h)']=Y_pred_S56.reshape(-1,1)
-df_18_morning_3['S56 speed (km/h) ground truth']=Y_test_S56.reshape(-1,1)
-df_18_morning_3['R129 speed (km/h)']=Y_pred_R129.reshape(-1,1)
-df_18_morning_3['R129 speed (km/h) ground truth']=Y_test_R129.reshape(-1,1)
-df_18_morning_3['S57 speed (km/h)']=Y_pred_S57.reshape(-1,1)
-df_18_morning_3['S57 speed (km/h) ground truth']=Y_test_S57.reshape(-1,1)
-df_18_morning_3['R170 speed (km/h)']=Y_pred_R170.reshape(-1,1)
-df_18_morning_3['R170 speed (km/h) ground truth']=Y_test_R170.reshape(-1,1)
-df_18_morning_3['S1707 speed (km/h)']=Y_pred_S1707.reshape(-1,1)
-df_18_morning_3['S1707 speed (km/h) ground truth']=Y_test_S1707.reshape(-1,1)
-df_18_morning_3['S59 speed (km/h)']=Y_pred_S59.reshape(-1,1)
-df_18_morning_3['S59 speed (km/h) ground truth']=Y_test_S59.reshape(-1,1)
-df_18_morning_3['R130 speed (km/h)']=Y_pred_R130.reshape(-1,1)
-df_18_morning_3['R130 speed (km/h) ground truth']=Y_test_R130.reshape(-1,1)
-df_18_morning_3['R171 speed (km/h)']=Y_pred_R171.reshape(-1,1)
-df_18_morning_3['R171 speed (km/h) ground truth']=Y_test_R171.reshape(-1,1)
-df_18_morning_3['S60 speed (km/h)']=Y_pred_S60.reshape(-1,1)
-df_18_morning_3['S60 speed (km/h) ground truth']=Y_test_S60.reshape(-1,1)
-df_18_morning_3['S61 speed (km/h)']=Y_pred_S61.reshape(-1,1)
-df_18_morning_3['S61 speed (km/h) ground truth']=Y_test_S61.reshape(-1,1)
-df_18_morning_3
+index=pd.date_range("14:30", periods=10, freq="6min")
+df_19= pd.DataFrame(index=index.time, columns=columns)
+df_19
+df_19['S54 speed (km/h)']=Y_pred_S54.reshape(-1,1)
+df_19['S54 speed (km/h) ground truth']=Y_test_S54.reshape(-1,1)
+df_19['S1706 speed (km/h)']=Y_pred_S1706.reshape(-1,1)
+df_19['S1706 speed (km/h) ground truth']=Y_test_S1706.reshape(-1,1)
+df_19['R169 speed (km/h)']=Y_pred_R169.reshape(-1,1)
+df_19['R169 speed (km/h) ground truth']=Y_test_R169.reshape(-1,1)
+df_19['S56 speed (km/h)']=Y_pred_S56.reshape(-1,1)
+df_19['S56 speed (km/h) ground truth']=Y_test_S56.reshape(-1,1)
+df_19['R129 speed (km/h)']=Y_pred_R129.reshape(-1,1)
+df_19['R129 speed (km/h) ground truth']=Y_test_R129.reshape(-1,1)
+df_19['S57 speed (km/h)']=Y_pred_S57.reshape(-1,1)
+df_19['S57 speed (km/h) ground truth']=Y_test_S57.reshape(-1,1)
+df_19['R170 speed (km/h)']=Y_pred_R170.reshape(-1,1)
+df_19['R170 speed (km/h) ground truth']=Y_test_R170.reshape(-1,1)
+df_19['S1707 speed (km/h)']=Y_pred_S1707.reshape(-1,1)
+df_19['S1707 speed (km/h) ground truth']=Y_test_S1707.reshape(-1,1)
+df_19['S59 speed (km/h)']=Y_pred_S59.reshape(-1,1)
+df_19['S59 speed (km/h) ground truth']=Y_test_S59.reshape(-1,1)
+df_19['R130 speed (km/h)']=Y_pred_R130.reshape(-1,1)
+df_19['R130 speed (km/h) ground truth']=Y_test_R130.reshape(-1,1)
+df_19['R171 speed (km/h)']=Y_pred_R171.reshape(-1,1)
+df_19['R171 speed (km/h) ground truth']=Y_test_R171.reshape(-1,1)
+df_19['S60 speed (km/h)']=Y_pred_S60.reshape(-1,1)
+df_19['S60 speed (km/h) ground truth']=Y_test_S60.reshape(-1,1)
+df_19['S61 speed (km/h)']=Y_pred_S61.reshape(-1,1)
+df_19['S61 speed (km/h) ground truth']=Y_test_S61.reshape(-1,1)
+df_19
 
-df_18_morning_3.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/SVR_prediction_speed_15-08-2014_morning_3.xlsx') 
+#10/2
+df_15
+#10/9
+df_16
+#12/2
+df_17
+#22/3
+df_18
+#15/8
+df_19
+
+writer = pd.ExcelWriter('/Users/nronzoni/Desktop/TrafficData Minnesota/SupportVectorRegression_prediction_speed_2.xlsx', engine='xlsxwriter')
+
+# Write each dataframe to a different worksheet.
+df_15.to_excel(writer, sheet_name='10-2-2014 morning')
+df_17.to_excel(writer, sheet_name='12-2-2014 morning')
+df_18.to_excel(writer, sheet_name='22-3-2014 afternoon')
+df_19.to_excel(writer, sheet_name='15-8-2014 afternoon')
+df_16.to_excel(writer, sheet_name='10-9-2014 morning')
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.save()
+
+
+############################ walk forward validation FLOW
+
+first_day_S54=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,0)
+first_day_S1706=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,1)
+first_day_R169=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,2)
+first_day_S56=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,3)
+first_day_R129=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,4)
+first_day_S57=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,5)
+first_day_R170=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,6)
+first_day_S1707=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,7)
+first_day_S59=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,8)
+first_day_R130=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,9)
+first_day_R171=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,10)
+first_day_S60=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,11)
+first_day_S61=walk_forward_validation(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],5,30,12)
+
+
+Y_pred_S54=series_test_S54_flow[1].inverse_transform(first_day_S54[0].reshape(-1,1))
+Y_test_S54=series_test_S54_flow[1].inverse_transform(first_day_S54[1].reshape(-1,1))
+error_S54=math.sqrt(mean_squared_error(Y_test_S54.reshape(-1,1),Y_pred_S54.reshape(-1,1)))
+Y_pred_S1706=series_test_S1706_flow[1].inverse_transform(first_day_S1706[0].reshape(-1,1))
+Y_test_S1706=series_test_S1706_flow[1].inverse_transform(first_day_S1706[1].reshape(-1,1))
+error_S1706=math.sqrt(mean_squared_error(Y_test_S1706.reshape(-1,1),Y_pred_S1706.reshape(-1,1)))
+Y_pred_R169=series_test_R169_flow[1].inverse_transform(first_day_R169[0].reshape(-1,1))
+Y_test_R169=series_test_R169_flow[1].inverse_transform(first_day_R169[1].reshape(-1,1))
+error_R169=math.sqrt(mean_squared_error(Y_test_R169.reshape(-1,1),Y_pred_R169.reshape(-1,1)))
+Y_pred_S56=series_test_S56_flow[1].inverse_transform(first_day_S56[0].reshape(-1,1))
+Y_test_S56=series_test_S56_flow[1].inverse_transform(first_day_S56[1].reshape(-1,1))
+error_S56=math.sqrt(mean_squared_error(Y_test_S56.reshape(-1,1),Y_pred_S56.reshape(-1,1)))
+Y_pred_R129=series_test_R129_flow[1].inverse_transform(first_day_R129[0].reshape(-1,1))
+Y_test_R129=series_test_R129_flow[1].inverse_transform(first_day_R129[1].reshape(-1,1))
+error_R129=math.sqrt(mean_squared_error(Y_test_R129.reshape(-1,1),Y_pred_R129.reshape(-1,1)))
+Y_pred_S57=series_test_S57_flow[1].inverse_transform(first_day_S57[0].reshape(-1,1))
+Y_test_S57=series_test_S57_flow[1].inverse_transform(first_day_S57[1].reshape(-1,1))
+error_S57=math.sqrt(mean_squared_error(Y_test_S57.reshape(-1,1),Y_pred_S57.reshape(-1,1)))
+Y_pred_R170=series_test_R170_flow[1].inverse_transform(first_day_R170[0].reshape(-1,1))
+Y_test_R170=series_test_R170_flow[1].inverse_transform(first_day_R170[1].reshape(-1,1))
+error_R170=math.sqrt(mean_squared_error(Y_test_R170.reshape(-1,1),Y_pred_R170.reshape(-1,1)))
+Y_pred_S1707=series_test_S1707_flow[1].inverse_transform(first_day_S1707[0].reshape(-1,1))
+Y_test_S1707=series_test_S1707_flow[1].inverse_transform(first_day_S1707[1].reshape(-1,1))
+error_S1707=math.sqrt(mean_squared_error(Y_test_S1707.reshape(-1,1),Y_pred_S1707.reshape(-1,1)))
+Y_pred_S59=series_test_S59_flow[1].inverse_transform(first_day_S59[0].reshape(-1,1))
+Y_test_S59=series_test_S59_flow[1].inverse_transform(first_day_S59[1].reshape(-1,1))
+error_S59=math.sqrt(mean_squared_error(Y_test_S59.reshape(-1,1),Y_pred_S59.reshape(-1,1)))
+Y_pred_R130=series_test_R130_flow[1].inverse_transform(first_day_R130[0].reshape(-1,1))
+Y_test_R130=series_test_R130_flow[1].inverse_transform(first_day_R130[1].reshape(-1,1))
+error_R130=math.sqrt(mean_squared_error(Y_test_R130.reshape(-1,1),Y_pred_R130.reshape(-1,1)))
+Y_pred_R171=series_test_R171_flow[1].inverse_transform(first_day_R171[0].reshape(-1,1))
+Y_test_R171=series_test_R171_flow[1].inverse_transform(first_day_R171[1].reshape(-1,1))
+error_R171=math.sqrt(mean_squared_error(Y_test_R171.reshape(-1,1),Y_pred_R171.reshape(-1,1)))
+Y_pred_S60=series_test_S60_flow[1].inverse_transform(first_day_S60[0].reshape(-1,1))
+Y_test_S60=series_test_S60_flow[1].inverse_transform(first_day_S60[1].reshape(-1,1))
+error_S60=math.sqrt(mean_squared_error(Y_test_S60.reshape(-1,1),Y_pred_S60.reshape(-1,1)))
+Y_pred_S61=series_test_S61_flow[1].inverse_transform(first_day_S61[0].reshape(-1,1))
+Y_test_S61=series_test_S61_flow[1].inverse_transform(first_day_S61[1].reshape(-1,1))
+error_S61=math.sqrt(mean_squared_error(Y_test_S61.reshape(-1,1),Y_pred_S61.reshape(-1,1)))
+
+error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,error_R170,error_S1707,error_S59,error_R130,error_R171,error_S60,error_S61])
+
+
+columns = ['S54 flow (veh/h)','S54 flow (veh/h) ground truth','S1706 flow (veh/h)','S1706 flow (veh/h) ground truth', 'R169 flow (veh/h)','R169 flow (veh/h) ground truth','S56 flow (veh/h)','S56 flow (veh/h) ground truth','R129 flow (veh/h)','R129 flow (veh/h) ground truth', 'S57 flow (veh/h)','S57 flow (veh/h) ground truth','R170 flow (veh/h)','R170 flow (veh/h) ground truth','S1707 flow (veh/h)','S1707 flow (veh/h) ground truth', 'S59 flow (veh/h)','S59 flow (veh/h) ground truth','R130 flow (veh/h)','R130 flow (veh/h) ground truth','R171 flow (veh/h)','R171 flow (veh/h) ground truth', 'S60 flow (veh/h)','S60 flow (veh/h) ground truth','S61 flow (veh/h)','S61 flow (veh/h) ground truth']
+index=pd.date_range("08:00", periods=10, freq="6min")
+df_24 = pd.DataFrame(index=index.time, columns=columns)
+df_24
+df_24['S54 flow (veh/h)']=Y_pred_S54.reshape(-1,1)
+df_24['S54 flow (veh/h) ground truth']=Y_test_S54.reshape(-1,1)
+df_24['S1706 flow (veh/h)']=Y_pred_S1706.reshape(-1,1)
+df_24['S1706 flow (veh/h) ground truth']=Y_test_S1706.reshape(-1,1)
+df_24['R169 flow (veh/h)']=Y_pred_R169.reshape(-1,1)
+df_24['R169 flow (veh/h) ground truth']=Y_test_R169.reshape(-1,1)
+df_24['S56 flow (veh/h)']=Y_pred_S56.reshape(-1,1)
+df_24['S56 flow (veh/h) ground truth']=Y_test_S56.reshape(-1,1)
+df_24['R129 flow (veh/h)']=Y_pred_R129.reshape(-1,1)
+df_24['R129 flow (veh/h) ground truth']=Y_test_R129.reshape(-1,1)
+df_24['S57 flow (veh/h)']=Y_pred_S57.reshape(-1,1)
+df_24['S57 flow (veh/h) ground truth']=Y_test_S57.reshape(-1,1)
+df_24['R170 flow (veh/h)']=Y_pred_R170.reshape(-1,1)
+df_24['R170 flow (veh/h) ground truth']=Y_test_R170.reshape(-1,1)
+df_24['S1707 flow (veh/h)']=Y_pred_S1707.reshape(-1,1)
+df_24['S1707 flow (veh/h) ground truth']=Y_test_S1707.reshape(-1,1)
+df_24['S59 flow (veh/h)']=Y_pred_S59.reshape(-1,1)
+df_24['S59 flow (veh/h) ground truth']=Y_test_S59.reshape(-1,1)
+df_24['R130 flow (veh/h)']=Y_pred_R130.reshape(-1,1)
+df_24['R130 flow (veh/h) ground truth']=Y_test_R130.reshape(-1,1)
+df_24['R171 flow (veh/h)']=Y_pred_R171.reshape(-1,1)
+df_24['R171 flow (veh/h) ground truth']=Y_test_R171.reshape(-1,1)
+df_24['S60 flow (veh/h)']=Y_pred_S60.reshape(-1,1)
+df_24['S60 flow (veh/h) ground truth']=Y_test_S60.reshape(-1,1)
+df_24['S61 flow (veh/h)']=Y_pred_S61.reshape(-1,1)
+df_24['S61 flow (veh/h) ground truth']=Y_test_S61.reshape(-1,1)
+df_24
+
+
+
+#10/2
+df_20
+#12/2
+df_21
+#22/3
+df_22
+#15/08
+df_23
+#10/09
+df_24
+#
+
+# Create a Pandas Excel writer using XlsxWriter as the engine.
+writer = pd.ExcelWriter('/Users/nronzoni/Desktop/TrafficData Minnesota/WALKFORWARD_SupportVectorRegression_prediction_flow.xlsx', engine='xlsxwriter')
+
+# Write each dataframe to a different worksheet.
+df_20.to_excel(writer, sheet_name='10-2-2014 morning')
+df_21.to_excel(writer, sheet_name='12-2-2014 morning')
+df_22.to_excel(writer, sheet_name='22-3-2014 afternoon')
+df_23.to_excel(writer, sheet_name='15-8-2014 afternoon')
+df_24.to_excel(writer, sheet_name='10-9-2014 morning')
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.save()
+
+
+
+first_day_S54=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,0)
+first_day_S1706=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,1)
+first_day_R169=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,2)
+first_day_S56=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,3)
+first_day_R129=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,4)
+first_day_S57=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,5)
+first_day_R170=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,6)
+first_day_S1707=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,7)
+first_day_S59=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,8)
+first_day_R130=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,9)
+first_day_R171=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,10)
+first_day_S60=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,11)
+first_day_S61=walk_forward_validation(multivariate_time_series_train_speed,multivariate_time_series_test_speed[23:24,:,:],5,30,12)
+
+
+Y_pred_S54=series_test_S54_speed[1].inverse_transform(first_day_S54[0].reshape(-1,1))
+Y_test_S54=series_test_S54_speed[1].inverse_transform(first_day_S54[1].reshape(-1,1))
+error_S54=math.sqrt(mean_squared_error(Y_test_S54.reshape(-1,1),Y_pred_S54.reshape(-1,1)))
+Y_pred_S1706=series_test_S1706_speed[1].inverse_transform(first_day_S1706[0].reshape(-1,1))
+Y_test_S1706=series_test_S1706_speed[1].inverse_transform(first_day_S1706[1].reshape(-1,1))
+error_S1706=math.sqrt(mean_squared_error(Y_test_S1706.reshape(-1,1),Y_pred_S1706.reshape(-1,1)))
+Y_pred_R169=series_test_R169_speed[1].inverse_transform(first_day_R169[0].reshape(-1,1))
+Y_test_R169=series_test_R169_speed[1].inverse_transform(first_day_R169[1].reshape(-1,1))
+error_R169=math.sqrt(mean_squared_error(Y_test_R169.reshape(-1,1),Y_pred_R169.reshape(-1,1)))
+Y_pred_S56=series_test_S56_speed[1].inverse_transform(first_day_S56[0].reshape(-1,1))
+Y_test_S56=series_test_S56_speed[1].inverse_transform(first_day_S56[1].reshape(-1,1))
+error_S56=math.sqrt(mean_squared_error(Y_test_S56.reshape(-1,1),Y_pred_S56.reshape(-1,1)))
+Y_pred_R129=series_test_R129_speed[1].inverse_transform(first_day_R129[0].reshape(-1,1))
+Y_test_R129=series_test_R129_speed[1].inverse_transform(first_day_R129[1].reshape(-1,1))
+error_R129=math.sqrt(mean_squared_error(Y_test_R129.reshape(-1,1),Y_pred_R129.reshape(-1,1)))
+Y_pred_S57=series_test_S57_speed[1].inverse_transform(first_day_S57[0].reshape(-1,1))
+Y_test_S57=series_test_S57_speed[1].inverse_transform(first_day_S57[1].reshape(-1,1))
+error_S57=math.sqrt(mean_squared_error(Y_test_S57.reshape(-1,1),Y_pred_S57.reshape(-1,1)))
+Y_pred_R170=series_test_R170_speed[1].inverse_transform(first_day_R170[0].reshape(-1,1))
+Y_test_R170=series_test_R170_speed[1].inverse_transform(first_day_R170[1].reshape(-1,1))
+error_R170=math.sqrt(mean_squared_error(Y_test_R170.reshape(-1,1),Y_pred_R170.reshape(-1,1)))
+Y_pred_S1707=series_test_S1707_speed[1].inverse_transform(first_day_S1707[0].reshape(-1,1))
+Y_test_S1707=series_test_S1707_speed[1].inverse_transform(first_day_S1707[1].reshape(-1,1))
+error_S1707=math.sqrt(mean_squared_error(Y_test_S1707.reshape(-1,1),Y_pred_S1707.reshape(-1,1)))
+Y_pred_S59=series_test_S59_speed[1].inverse_transform(first_day_S59[0].reshape(-1,1))
+Y_test_S59=series_test_S59_speed[1].inverse_transform(first_day_S59[1].reshape(-1,1))
+error_S59=math.sqrt(mean_squared_error(Y_test_S59.reshape(-1,1),Y_pred_S59.reshape(-1,1)))
+Y_pred_R130=series_test_R130_speed[1].inverse_transform(first_day_R130[0].reshape(-1,1))
+Y_test_R130=series_test_R130_speed[1].inverse_transform(first_day_R130[1].reshape(-1,1))
+error_R130=math.sqrt(mean_squared_error(Y_test_R130.reshape(-1,1),Y_pred_R130.reshape(-1,1)))
+Y_pred_R171=series_test_R171_speed[1].inverse_transform(first_day_R171[0].reshape(-1,1))
+Y_test_R171=series_test_R171_speed[1].inverse_transform(first_day_R171[1].reshape(-1,1))
+error_R171=math.sqrt(mean_squared_error(Y_test_R171.reshape(-1,1),Y_pred_R171.reshape(-1,1)))
+Y_pred_S60=series_test_S60_speed[1].inverse_transform(first_day_S60[0].reshape(-1,1))
+Y_test_S60=series_test_S60_speed[1].inverse_transform(first_day_S60[1].reshape(-1,1))
+error_S60=math.sqrt(mean_squared_error(Y_test_S60.reshape(-1,1),Y_pred_S60.reshape(-1,1)))
+Y_pred_S61=series_test_S61_speed[1].inverse_transform(first_day_S61[0].reshape(-1,1))
+Y_test_S61=series_test_S61_speed[1].inverse_transform(first_day_S61[1].reshape(-1,1))
+error_S61=math.sqrt(mean_squared_error(Y_test_S61.reshape(-1,1),Y_pred_S61.reshape(-1,1)))
+
+error=mean([error_S54,error_S1706,error_R169,error_S56,error_R129,error_S57,error_R170,error_S1707,error_S59,error_R130,error_R171,error_S60,error_S61])
+
+
+columns = ['S54 speed (km/h)','S54 speed (km/h) ground truth','S1706 speed (km/h)','S1706 speed (km/h) ground truth', 'R169 speed (km/h)','R169 speed (km/h) ground truth','S56 speed (km/h)','S56 speed (km/h) ground truth','R129 speed (km/h)','R129 speed (km/h) ground truth', 'S57 speed (km/h)','S57 speed (km/h) ground truth','R170 speed (km/h)','R170 speed (km/h) ground truth','S1707 speed (km/h)','S1707 speed (km/h) ground truth', 'S59 speed (km/h)','S59 speed (km/h) ground truth','R130 speed (km/h)','R130 speed (km/h) ground truth','R171 speed (km/h)','R171 speed (km/h) ground truth', 'S60 speed (km/h)','S60 speed (km/h) ground truth','S61 speed (km/h)','S61 speed (km/h) ground truth']
+index=pd.date_range("08:00", periods=10, freq="6min")
+df_29= pd.DataFrame(index=index.time, columns=columns)
+df_29
+df_29['S54 speed (km/h)']=Y_pred_S54.reshape(-1,1)
+df_29['S54 speed (km/h) ground truth']=Y_test_S54.reshape(-1,1)
+df_29['S1706 speed (km/h)']=Y_pred_S1706.reshape(-1,1)
+df_29['S1706 speed (km/h) ground truth']=Y_test_S1706.reshape(-1,1)
+df_29['R169 speed (km/h)']=Y_pred_R169.reshape(-1,1)
+df_29['R169 speed (km/h) ground truth']=Y_test_R169.reshape(-1,1)
+df_29['S56 speed (km/h)']=Y_pred_S56.reshape(-1,1)
+df_29['S56 speed (km/h) ground truth']=Y_test_S56.reshape(-1,1)
+df_29['R129 speed (km/h)']=Y_pred_R129.reshape(-1,1)
+df_29['R129 speed (km/h) ground truth']=Y_test_R129.reshape(-1,1)
+df_29['S57 speed (km/h)']=Y_pred_S57.reshape(-1,1)
+df_29['S57 speed (km/h) ground truth']=Y_test_S57.reshape(-1,1)
+df_29['R170 speed (km/h)']=Y_pred_R170.reshape(-1,1)
+df_29['R170 speed (km/h) ground truth']=Y_test_R170.reshape(-1,1)
+df_29['S1707 speed (km/h)']=Y_pred_S1707.reshape(-1,1)
+df_29['S1707 speed (km/h) ground truth']=Y_test_S1707.reshape(-1,1)
+df_29['S59 speed (km/h)']=Y_pred_S59.reshape(-1,1)
+df_29['S59 speed (km/h) ground truth']=Y_test_S59.reshape(-1,1)
+df_29['R130 speed (km/h)']=Y_pred_R130.reshape(-1,1)
+df_29['R130 speed (km/h) ground truth']=Y_test_R130.reshape(-1,1)
+df_29['R171 speed (km/h)']=Y_pred_R171.reshape(-1,1)
+df_29['R171 speed (km/h) ground truth']=Y_test_R171.reshape(-1,1)
+df_29['S60 speed (km/h)']=Y_pred_S60.reshape(-1,1)
+df_29['S60 speed (km/h) ground truth']=Y_test_S60.reshape(-1,1)
+df_29['S61 speed (km/h)']=Y_pred_S61.reshape(-1,1)
+df_29['S61 speed (km/h) ground truth']=Y_test_S61.reshape(-1,1)
+df_29
+
+#10/2
+df_25
+#10/9
+df_26
+#12/2
+df_27
+#22/3
+df_28
+#15/8
+df_29
+
+writer = pd.ExcelWriter('/Users/nronzoni/Desktop/TrafficData Minnesota/WALKFORWARD_SupportVectorRegression_prediction_speed.xlsx', engine='xlsxwriter')
+
+# Write each dataframe to a different worksheet.
+df_25.to_excel(writer, sheet_name='10-2-2014 morning')
+df_26.to_excel(writer, sheet_name='12-2-2014 morning')
+df_27.to_excel(writer, sheet_name='22-3-2014 afternoon')
+df_28.to_excel(writer, sheet_name='15-8-2014 afternoon')
+df_29.to_excel(writer, sheet_name='10-9-2014 morning')
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.save()
+
+
+
+
+
 
 
 
