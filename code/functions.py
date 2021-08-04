@@ -378,6 +378,48 @@ def walk_forward_validation(train,test,window_size,starting_time,loop):
     GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
     return PRED_test, GROUND_TRUTH_test
  
+ #no clustering use the all train set 
+def walk_forward_validation_bis(train,test,window_size,starting_time,loop):
+    #define a starting split X and Y for test set 
+    X_test=test[:,0:starting_time,:]
+    Y_test=test[:,starting_time:,:]
+    GROUND_TRUTH_test=[]
+    PRED_test=[]
+    for t in range(0,10): # number of prediction from starting point
+        # take an observation forward: len(X_train)=len(X_test)+1 
+        train_set=train[:,0:starting_time+1+t,:]
+        #select only most window_size+1 recent observations for train 
+        XY_train=train_set[:,-window_size-1:,:]
+        #select only most window_size recent observations for test
+        X_test=X_test[:,-window_size:,:]
+        #divide X and Y in the train set 
+        X_train=XY_train[:,-window_size-1:-1,:]
+        Y_train=XY_train[:,-1:,:]
+        #select the detector we want to predict
+        x_train=X_train.reshape(X_train.shape[0],-1)
+        x_test=X_test.reshape(1,-1)
+        #select the target Train 
+        y_train=Y_train[:,0,loop]
+        #select the target Test
+        y_test=Y_test[:,t,loop]
+        #rescale the target Test 
+        GROUND_TRUTH_test.append(y_test)
+        #Grid search to tune the parameters
+        reg =SVR(kernel="rbf", gamma="auto")
+        clf = GridSearchCV(estimator=reg, param_grid=p_grid, scoring='neg_mean_squared_error',refit=True,cv=3)
+        #fit the model with the best found parameters
+        clf.fit(x_train,y_train)
+        # prediction for the test 
+        y_hat_test=clf.predict(x_test)
+        #rescale the prediction of the Test 
+        PRED_test.append(y_hat_test)
+        #Add the curent observation to the X set 
+        obs_test=Y_test[:,t:t+1,:]
+        X_test=np.hstack((X_test,obs_test))
+    PRED_test=np.concatenate(PRED_test,axis=0)
+    GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
+    return PRED_test, GROUND_TRUTH_test
+ 
 
 
       
@@ -421,14 +463,11 @@ def loubes(train,test,window_size,starting_time):
     ground_truth=np.concatenate(ground_truth,axis=0)
     return PRED_test, ground_truth, mean(MSE_test)
 
-#centroids 
-centroids=km_dba.cluster_centers_
 
-centroids.shape
 ############################### FLOW #######################################
 
 def classification_pred_same(train,test,starting_time,window_future,window_past):
-    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
+    km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
     prediction_train=km_dba.predict(train)
     #take the centroid 
     centroid=km_dba.cluster_centers_
@@ -439,8 +478,8 @@ def classification_pred_same(train,test,starting_time,window_future,window_past)
     columns=["cluster","sim"]
     df=pd.DataFrame(columns=columns)
     #select the centroid closest to test data 
-    for i in range (0,4):
-      sim = dtw(X_test[0,:,:],train_set[i,:,:],5,10)   
+    for i in range (0,2):
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
       df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
     df["sim"]=df["sim"].abs()
     cluster=df[df.sim==df.sim.min()].cluster
@@ -454,7 +493,7 @@ def classification_pred_same(train,test,starting_time,window_future,window_past)
     df1=pd.DataFrame(columns=columns1)
     for j in range(0,train_set.shape[0]):
         #compare time series of the same lenght 
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:],5,10) 
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
         df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
     df1["sim1"]=df1["sim1"].abs()
     ts=df1[df1.sim1==df1.sim1.min()].ts
@@ -462,6 +501,23 @@ def classification_pred_same(train,test,starting_time,window_future,window_past)
     #select the time series closest to the test and return the window_future as prediction
     Y_pred=train_set[ts.index,starting_time:starting_time+window_future,:]
     return cluster,ts, Y_pred, Y_test
+
+def classification_pred_same_bis(train,test,starting_time,window_future,window_past):
+    X_train=train[:,starting_time-window_past:starting_time,:]
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    Y_test=test[0,starting_time:starting_time+window_future,:]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    for j in range(0,X_train.shape[0]):
+        #compare time series of the same lenght 
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1[df1.sim1==df1.sim1.min()].ts
+    print(ts)
+    #select the time series closest to the test and return the window_future as prediction
+    Y_pred=train[ts.index,starting_time:starting_time+window_future,:]
+    return ts, Y_pred, Y_test
 
 
 def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
@@ -507,7 +563,7 @@ def classification_pred_speed(train,test,starting_time,window_future,window_past
     columns1=["ts","sim1"]
     df1=pd.DataFrame(columns=columns1)
     for j in range(0,train.shape[0]):
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:],5,10) 
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
         df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
     df1["sim1"]=df1["sim1"].abs()
     ts=df1[df1.sim1==df1.sim1.min()].ts
@@ -547,7 +603,7 @@ def closest_days_target(train,test,starting_time,window_past):
     df=pd.DataFrame(columns=columns)
     #select the centroid closest to test data 
     for i in range (0,4):
-      sim = dtw(X_test[0,:,:],train_set[i,:,:],5,10)   
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
       df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
     df["sim"]=df["sim"].abs()
     cluster=df[df.sim==df.sim.min()].cluster
@@ -573,23 +629,11 @@ def closest_days_target_speed(train,test,starting_time,window_past):
     df1=pd.DataFrame(columns=columns1)
     print(train.shape[0])
     for j in range(0,train.shape[0]):
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:],5,10) 
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
         df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
     df1["sim1"]=df1["sim1"].abs()
     ts=df1.nsmallest(5, 'sim1', keep='all').index
     return print(ts)
-
-
-
-closest_days_target(multivariate_time_series_train,multivariate_time_series_test[23:24,:,:],30,10)
-
-sample_weight=np.ones(115)
-sample_weight[34]=1.5  
-sample_weight[113]=1.25
-sample_weight[98]=1.125  
-sample_weight[69]=1.0625
-sample_weight[75]=1.03125
-
 
 
 

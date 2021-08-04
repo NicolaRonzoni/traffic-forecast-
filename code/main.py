@@ -541,6 +541,72 @@ multivariate_test=np.dstack((series_test_S54_flow[0],series_test_S1706_flow[0],s
 multivariate_time_series_test = to_time_series(multivariate_test)
 print(multivariate_time_series_test.shape)
 
+#multivariate time series train speed
+#check if multivariate_speed already exist
+multivariate_speed=np.dstack((series_train_S54_speed[0],series_train_S1706_speed[0],series_train_R169_speed[0],series_train_S56_speed[0],series_train_R129_speed[0],series_train_S57_speed[0],series_train_R170_speed[0],series_train_S1707_speed[0],series_train_S59_speed[0],series_train_R130_speed[0],series_train_R171_speed[0],series_train_S60_speed[0],series_train_S61_speed[0]))
+multivariate_time_series_train_speed = to_time_series(multivariate_speed)
+print(multivariate_time_series_train_speed.shape)
+
+#multivariate time series test speed
+multivariate_test_speed=np.dstack((series_test_S54_speed[0],series_test_S1706_speed[0],series_test_R169_speed[0],series_test_S56_speed[0],series_test_R129_speed[0],series_test_S57_speed[0],series_test_R170_speed[0],series_test_S1707_speed[0],series_test_S59_speed[0],series_test_R130_speed[0],series_test_R171_speed[0],series_test_S60_speed[0],series_test_S61_speed[0]))
+multivariate_time_series_test_speed = to_time_series(multivariate_test_speed)
+print(multivariate_time_series_test_speed.shape)
+
+
+
+#dataframe to select days which belogns to the closest cluster 
+len(index_train)
+columns=['days','k']
+index=np.arange(357)
+len(index)
+dataframe_train=pd.DataFrame(columns=columns,index=index)
+dataframe_train['days']=index_train
+dataframe_train['k']=prediction_train
+dataframe_train
+dataframe_train['day'] = dataframe_train['days'].dt.day
+dataframe_train['month'] =dataframe_train['days'].dt.month
+dataframe_train['year'] = dataframe_train['days'].dt.year
+dataframe_train.drop(['days'], axis=1)
+dataframe_train = dataframe_train[['year', 'month', 'day', 'k']]
+dataframe_train
+dataframe_train.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/Prediction without ramps clustering on the speed/Classification of the days no ramps clusteringspeed.xlsx')
+#if k=0 
+days_cluster=dataframe_train[dataframe_train['k']==0].index
+len(days_cluster)
+days_cluster[156]
+
+pd.set_option('display.max_seq_items', 300)
+print(days_cluster)
+multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(  0,   2,   4,   5,   6,  11,  12,  13,  14,  18,  19,  20,  21,
+             25,  27,  32,  33,  36,  39,  40,  41,  46,  47,  48,  53,  54,
+             55,  60,  61,  67,  68,  69,  70,  74,  75,  81,  82,  83,  84,
+             87,  88,  89,  90,  91,  92,  93,  95,  96,  99, 102, 103, 104,
+            106, 108, 109, 110, 116, 117, 123, 124, 137, 138, 144, 145, 146,
+            151, 152, 158, 159, 165, 166, 175, 176, 180, 181, 182, 183, 189,
+            190, 196, 197, 203, 204, 210, 211, 212, 217, 218, 224, 225, 236,
+            237, 238, 243, 248, 249, 255, 256, 262, 263, 264, 269, 270, 276,
+            277, 283, 284, 285, 287, 290, 291, 292, 297, 298, 301, 304, 305,
+            306, 311, 312, 318, 319, 320, 322, 323, 324, 325, 326, 332, 340,
+            346, 347, 349, 350, 351, 352, 353, 354, 356),:,:]
+
+multivariate_time_series_train_speed_subset.shape
+
+multivariate_time_series_train_subset=multivariate_time_series_train[( 0,   2,   4,   5,   6,  11,  12,  13,  14,  18,  19,  20,  21,
+             25,  27,  32,  33,  36,  39,  40,  41,  46,  47,  48,  53,  54,
+             55,  60,  61,  67,  68,  69,  70,  74,  75,  81,  82,  83,  84,
+             87,  88,  89,  90,  91,  92,  93,  95,  96,  99, 102, 103, 104,
+            106, 108, 109, 110, 116, 117, 123, 124, 137, 138, 144, 145, 146,
+            151, 152, 158, 159, 165, 166, 175, 176, 180, 181, 182, 183, 189,
+            190, 196, 197, 203, 204, 210, 211, 212, 217, 218, 224, 225, 236,
+            237, 238, 243, 248, 249, 255, 256, 262, 263, 264, 269, 270, 276,
+            277, 283, 284, 285, 287, 290, 291, 292, 297, 298, 301, 304, 305,
+            306, 311, 312, 318, 319, 320, 322, 323, 324, 325, 326, 332, 340,
+            346, 347, 349, 350, 351, 352, 353, 354, 356),:,:]
+
+multivariate_time_series_train_subset.shape
+
+
+
 #CLUSTERING
 
 from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
@@ -554,16 +620,16 @@ plt.ylabel('Gap Statistic');
 plt.title('Gap Statistic vs. number of cluster, test set');
 
 #estimate the gamma hyperparameter 
-gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0) 
+gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) 
 
 #fit the model on train data 
-km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train)
+km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train_speed)
 
 #predict train 
-prediction_train=km_dba.fit_predict(multivariate_time_series_train,y=None)
+prediction_train=km_dba.fit_predict(multivariate_time_series_train_speed,y=None)
 
 #prediction test 
-prediction_test=km_dba.predict(multivariate_time_series_test)
+prediction_test=km_dba.predict(multivariate_time_series_test_speed)
 
 #silhouette
 #train 
@@ -596,9 +662,30 @@ for i in range(0,357):
     elif prediction_train[i] !=0: 
         y=prediction_train[i]
     new.append(y)
+    
+for i in range(0,357):
+    if new[i] == 0.05:
+        new[i] =4
+        
+for i in range(0,357):
+    if new[i] == 2:
+        new[i] =0.05
+
+for i in range(0,357):
+    if new[i] ==4:
+        new[i] =2
+
 #assign at every day the cluster
 events_train = pd.Series(new,index=index_train)
-calplot.calplot(events_train,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2013 (train): Scenario 11, $\gamma$=86', linewidth=2.3,dropzero=True,vmin=0) 
+calplot.calplot(events_train,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2013 (train): loops', linewidth=2.3,dropzero=True,vmin=0) 
+
+for i in range(0,357):
+    if new[i] == 0.05:
+        new[i]=0
+    prediction_train[i]=new[i]
+
+np.set_printoptions(threshold=400)        
+prediction_train      
 
 
 #test
@@ -622,8 +709,31 @@ for i in range(0,35):
     elif prediction_test[i] !=0: 
         y=prediction_test[i]
     new.append(y)
+  
+for i in range(0,35):
+    if new[i] == 0.05:
+        new[i] =4
+        
+for i in range(0,35):
+    if new[i] == 2:
+        new[i] =0.05
+
+for i in range(0,35):
+    if new[i] ==4:
+        new[i] =2
+
+
 events_test = pd.Series(new,index=index_test)
-calplot.calplot(events_test,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2014 (test): Scenario 11, $\gamma$=86', linewidth=2.3,dropzero=True,vmin=0) 
+calplot.calplot(events_test,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2014 (test):loops', linewidth=2.3,dropzero=True,vmin=0) 
+
+for i in range(0,35):
+    if new[i] == 0.05:
+        new[i]=0
+    prediction_test[i]=new[i]
+
+np.set_printoptions(threshold=400)        
+prediction_test      
+
 
 
 #centroids 
@@ -640,6 +750,13 @@ dataframe_train=pd.DataFrame(columns=columns,index=index)
 dataframe_train['days']=index_train
 dataframe_train['k']=prediction_train
 dataframe_train
+dataframe_train['day'] = dataframe_train['days'].dt.day
+dataframe_train['month'] =dataframe_train['days'].dt.month
+dataframe_train['year'] = dataframe_train['days'].dt.year
+dataframe_train.drop(['days'], axis=1)
+dataframe_train = dataframe_train[['year', 'month', 'day', 'k']]
+dataframe_train
+dataframe_train.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/Prediction with ramps/Classification of the days.xlsx')
 #if k=0 
 days_cluster=dataframe_train[dataframe_train['k']==2].index
 len(days_cluster)
@@ -656,15 +773,595 @@ print(multivariate_time_series_test_speed.shape)
 
 pd.set_option('display.max_seq_items', 200)
 print(days_cluster)
-multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(45,  59,  80,  87,  94, 115, 129, 136, 150, 157, 163, 164, 169,
-            170, 172, 173, 174, 179, 186, 187, 188, 192, 193, 194, 195, 201,
-            202, 207, 208, 209, 214, 215, 216, 221, 222, 223, 229, 230, 234,
-            235, 242, 247, 254, 260, 261, 268, 275, 282, 289, 296, 303, 310,
-            317, 345),:,:]
+multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(17,  38,  45,  59,  66,  72,  80,  87,  94, 101, 115, 122, 129,
+            136, 142, 143, 150, 156, 157, 163, 164, 169, 170, 172, 173, 174,
+            179, 187, 188, 192, 193, 194, 195, 200, 201, 202, 207, 208, 209,
+            214, 215, 216, 220, 221, 222, 223, 229, 230, 233, 234, 235, 242,
+            247, 254, 260, 261, 268, 275, 282, 289, 296, 303, 310, 317, 322,
+            331, 338, 345),:,:]
 
 multivariate_time_series_train_speed_subset.shape
 #day nearest to the cluster centroid 
 closest(multivariate_time_series_train,prediction_train,centroids,3,events_train)
 
+############# plot of the centroids 
+########## centroids#########################
+########################################### k=4 ################################
+
+##### first cluster #######
+cluster1=multivariate_time_series_train[prediction_train==0]
+
+random.shuffle(cluster1)
+
+sample1=cluster1[0:20]
+
+sample1.shape
+
+S54_sample1=sample1[:,:,0]
+S54_sample1=series_train_S54_flow[1].inverse_transform(S54_sample1)
+S54_sample1.shape
+
+S1706_sample1=sample1[:,:,1]
+S1706_sample1=series_train_S1706_flow[1].inverse_transform(S1706_sample1)
+S1706_sample1.shape
+
+S56_sample1=sample1[:,:,2]
+S56_sample1=series_train_S56_flow[1].inverse_transform(S56_sample1)
+S56_sample1.shape
+
+S57_sample1=sample1[:,:,3]
+S57_sample1=series_train_S57_flow[1].inverse_transform(S57_sample1)
+S57_sample1.shape
+
+S1707_sample1=sample1[:,:,4]
+S1707_sample1=series_train_S1707_flow[1].inverse_transform(S1707_sample1)
+S1707_sample1.shape
+
+S59_sample1=sample1[:,:,5]
+S59_sample1=series_train_S59_flow[1].inverse_transform(S59_sample1)
+S59_sample1.shape
+
+S60_sample1=sample1[:,:,6]
+S60_sample1=series_train_S60_flow[1].inverse_transform(S60_sample1)
+S60_sample1.shape
+
+S61_sample1=sample1[:,:,7]
+S61_sample1=series_train_S61_flow[1].inverse_transform(S61_sample1)
+S61_sample1.shape
+
+
+####second cluster #######
+
+cluster2=multivariate_time_series_train[prediction_train==1]
+
+
+random.shuffle(cluster2)
+
+sample2=cluster2[0:20]
+
+sample2.shape
+
+S54_sample2=sample2[:,:,0]
+S54_sample2=series_train_S54_flow[1].inverse_transform(S54_sample2)
+S54_sample2.shape
+
+S1706_sample2=sample2[:,:,1]
+S1706_sample2=series_train_S1706_flow[1].inverse_transform(S1706_sample2)
+S1706_sample2.shape
+
+S56_sample2=sample2[:,:,2]
+S56_sample2=series_train_S56_flow[1].inverse_transform(S56_sample2)
+S56_sample2.shape
+
+S57_sample2=sample2[:,:,3]
+S57_sample2=series_train_S57_flow[1].inverse_transform(S57_sample2)
+S57_sample2.shape
+
+S1707_sample2=sample2[:,:,4]
+S1707_sample2=series_train_S1707_flow[1].inverse_transform(S1707_sample2)
+S1707_sample2.shape
+
+S59_sample2=sample2[:,:,5]
+S59_sample2=series_train_S59_flow[1].inverse_transform(S59_sample2)
+S59_sample2.shape
+
+S60_sample2=sample2[:,:,6]
+S60_sample2=series_train_S60_flow[1].inverse_transform(S60_sample2)
+S60_sample2.shape
+
+S61_sample2=sample2[:,:,7]
+S61_sample2=series_train_S61_flow[1].inverse_transform(S61_sample2)
+S61_sample2.shape
+
+
+#select randomly time series from third cluster 
+cluster3=multivariate_time_series_train[prediction_train==2]
+
+random.shuffle(cluster3)
+
+sample3=cluster3[0:20]
+
+sample3.shape
+
+
+S54_sample3=sample3[:,:,0]
+S54_sample3=series_train_S54_flow[1].inverse_transform(S54_sample3)
+S54_sample3.shape
+
+S1706_sample3=sample3[:,:,1]
+S1706_sample3=series_train_S1706_flow[1].inverse_transform(S1706_sample3)
+S1706_sample3.shape
+
+S56_sample3=sample3[:,:,2]
+S56_sample3=series_train_S56_flow[1].inverse_transform(S56_sample3)
+S56_sample3.shape
+
+S57_sample3=sample3[:,:,3]
+S57_sample3=series_train_S57_flow[1].inverse_transform(S57_sample3)
+S57_sample3.shape
+
+S1707_sample3=sample3[:,:,4]
+S1707_sample3=series_train_S1707_flow[1].inverse_transform(S1707_sample3)
+S1707_sample3.shape
+
+S59_sample3=sample3[:,:,5]
+S59_sample3=series_train_S59_flow[1].inverse_transform(S59_sample3)
+S59_sample3.shape
+
+S60_sample3=sample3[:,:,6]
+S60_sample3=series_train_S60_flow[1].inverse_transform(S60_sample3)
+S60_sample3.shape
+
+S61_sample3=sample3[:,:,7]
+S61_sample3=series_train_S61_flow[1].inverse_transform(S61_sample3)
+S61_sample3.shape
+
+#select randomly time series from fourth cluster 
+cluster4=multivariate_time_series_train[prediction_train==3]
+
+random.shuffle(cluster4)
+
+sample4=cluster4[0:20]
+
+sample4.shape
+
+S54_sample4=sample4[:,:,0]
+S54_sample4=series_train_S54_flow[1].inverse_transform(S54_sample4)
+S54_sample4.shape
+
+S1706_sample4=sample4[:,:,1]
+S1706_sample4=series_train_S1706_flow[1].inverse_transform(S1706_sample4)
+S1706_sample4.shape
+
+S56_sample4=sample4[:,:,2]
+S56_sample4=series_train_S56_flow[1].inverse_transform(S56_sample4)
+S56_sample4.shape
+
+S57_sample4=sample4[:,:,3]
+S57_sample4=series_train_S57_flow[1].inverse_transform(S57_sample4)
+S57_sample4.shape
+
+S1707_sample4=sample4[:,:,4]
+S1707_sample4=series_train_S57_flow[1].inverse_transform(S1707_sample4)
+S1707_sample4.shape
+
+S59_sample4=sample4[:,:,5]
+S59_sample4=series_train_S59_flow[1].inverse_transform(S59_sample4)
+S59_sample4.shape
+
+S60_sample4=sample4[:,:,6]
+S60_sample4=series_train_S60_flow[1].inverse_transform(S60_sample4)
+S60_sample4.shape
+
+S61_sample4=sample4[:,:,7]
+S61_sample4=series_train_S61_flow[1].inverse_transform(S61_sample4)
+S61_sample4.shape
+
+
+# plot the centroids k=4 
+centroids=km_dba.cluster_centers_
+centroids.shape
+
+#k=0#
+S54_1=centroids[0][:,0]
+S54_1=S54_1.reshape((len(S54_1), 1))
+
+S1706_1=centroids[0][:,1]
+S1706_1=S1706_1.reshape((len(S1706_1), 1))
+
+S56_1=centroids[0][:,2]
+S56_1=S56_1.reshape((len(S56_1), 1))
+
+S57_1=centroids[0][:,3]
+S57_1=S57_1.reshape((len(S57_1), 1))
+
+S1707_1=centroids[0][:,4]
+S1707_1=S1707_1.reshape((len(S1707_1), 1))
+
+S59_1=centroids[0][:,5]
+S59_1=S59_1.reshape((len(S59_1), 1))
+
+S60_1=centroids[0][:,6]
+S60_1=S60_1.reshape((len(S60_1), 1))
+
+S61_1=centroids[0][:,7]
+S61_1=S61_1.reshape((len(S61_1), 1))
+
+#k=1#
+S54_2=centroids[1][:,0]
+S54_2=S54_2.reshape((len(S54_2), 1))
+
+S1706_2=centroids[1][:,1]
+S1706_2=S1706_2.reshape((len(S1706_2), 1))
+
+S56_2=centroids[1][:,2]
+S56_2=S56_2.reshape((len(S56_2), 1))
+
+S57_2=centroids[1][:,3]
+S57_2=S57_2.reshape((len(S57_2), 1))
+
+S1707_2=centroids[1][:,4]
+S1707_2=S1707_2.reshape((len(S1707_2), 1))
+
+S59_2=centroids[1][:,5]
+S59_2=S59_2.reshape((len(S59_2), 1))
+
+S60_2=centroids[1][:,6]
+S60_2=S60_2.reshape((len(S60_2), 1))
+
+S61_2=centroids[1][:,7]
+S61_2=S61_2.reshape((len(S61_2), 1))
+
+#k=2#
+S54_3=centroids[2][:,0]
+S54_3=S54_3.reshape((len(S54_3), 1))
+
+S1706_3=centroids[2][:,1]
+S1706_3=S1706_3.reshape((len(S1706_3), 1))
+
+S56_3=centroids[2][:,2]
+S56_3=S56_3.reshape((len(S56_3), 1))
+
+S57_3=centroids[2][:,3]
+S57_3=S57_3.reshape((len(S57_3), 1))
+
+S1707_3=centroids[2][:,4]
+S1707_3=S1707_3.reshape((len(S1707_3), 1))
+
+S59_3=centroids[2][:,5]
+S59_3=S59_3.reshape((len(S59_3), 1))
+
+S60_3=centroids[2][:,6]
+S60_3=S60_3.reshape((len(S60_3), 1))
+
+S61_3=centroids[2][:,7]
+S61_3=S61_3.reshape((len(S61_3), 1))
+
+#k=3#
+S54_4=centroids[3][:,0]
+S54_4=S54_4.reshape((len(S54_4), 1))
+
+S1706_4=centroids[3][:,1]
+S1706_4=S1706_4.reshape((len(S1706_4), 1))
+
+S56_4=centroids[3][:,2]
+S56_4=S56_4.reshape((len(S56_4), 1))
+
+S57_4=centroids[3][:,3]
+S57_4=S57_4.reshape((len(S57_4), 1))
+
+S1707_4=centroids[3][:,4]
+S1707_4=S1707_4.reshape((len(S1707_4), 1))
+
+S59_4=centroids[3][:,5]
+S59_4=S59_4.reshape((len(S59_4), 1))
+
+S60_4=centroids[3][:,6]
+S60_4=S60_4.reshape((len(S60_4), 1))
+
+S61_4=centroids[3][:,7]
+S61_4=S61_4.reshape((len(S61_4), 1))
+
+import matplotlib.pyplot as plt
+fig = plt.gcf()
+
+x=np.arange(5,23,0.1)
+len(x)
+
+
+plt.figure(figsize=(35,40))
+plt.subplot(4,8,1)
+for i in range(0,20):
+    plt.plot(x,S54_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_3),'#33cc33', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,2)
+for i in range(0,20):
+    plt.plot(x,S1706_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_3),'#33cc33', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,3)
+for i in range(0,20):
+    plt.plot(x,S56_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_3),'#33cc33', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,4)
+for i in range(0,20):
+    plt.plot(x,S57_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_3),'#33cc33', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,5)
+for i in range(0,20):
+    plt.plot(x,S1707_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_3),'#33cc33', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,6)
+for i in range(0,20):
+    plt.plot(x,S59_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_3),'#33cc33', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,7)
+for i in range(0,20):
+    plt.plot(x,S60_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_3),'#33cc33', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,8)
+for i in range(0,20):
+    plt.plot(x,S61_sample3[i],'k-', alpha=.1)
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_3),'#33cc33', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=0')
+plt.legend(loc='upper right')
+plt.subplot(4,8,9)
+for i in range(0,20):
+    plt.plot(x,S54_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_2),'#ff9900', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,10)
+for i in range(0,20):
+    plt.plot(x,S1706_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_2),'#ff9900', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,11)
+for i in range(0,20):
+    plt.plot(x,S56_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_2),'#ff9900', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,12)
+for i in range(0,20):
+    plt.plot(x,S57_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_2),'#ff9900', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,13)
+for i in range(0,20):
+    plt.plot(x,S1707_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_2),'#ff9900', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,14)
+for i in range(0,20):
+    plt.plot(x,S59_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_2),'#ff9900', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,15)
+for i in range(0,20):
+    plt.plot(x,S60_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_2),'#ff9900', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,16)
+for i in range(0,20):
+    plt.plot(x,S61_sample2[i],'k-', alpha=.1)
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_2),'#ff9900', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=1')
+plt.legend(loc='upper right')
+plt.subplot(4,8,17)
+for i in range(0,20):
+    plt.plot(x,S54_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_1),'#ff0066', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,18)
+for i in range(0,20):
+    plt.plot(x,S1706_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_1),'#ff0066', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,19)
+for i in range(0,20):
+    plt.plot(x,S56_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_1),'#ff0066', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,20)
+for i in range(0,20):
+    plt.plot(x,S57_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_1),'#ff0066', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,21)
+for i in range(0,20):
+    plt.plot(x,S1707_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_1),'#ff0066', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,22)
+for i in range(0,20):
+    plt.plot(x,S59_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_1),'#ff0066', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,23)
+for i in range(0,20):
+    plt.plot(x,S60_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_1),'#ff0066', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,24)
+for i in range(0,20):
+    plt.plot(x,S61_sample1[i],'k-', alpha=.1)
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_1),'#ff0066', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=2')
+plt.legend(loc='upper right')
+plt.subplot(4,8,25)
+for i in range(0,20):
+    plt.plot(x,S54_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_4),'#476b6b', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,26)
+for i in range(0,20):
+    plt.plot(x,S1706_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_4),'#476b6b', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,27)
+for i in range(0,20):
+    plt.plot(x,S56_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_4),'#476b6b', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,28)
+for i in range(0,20):
+    plt.plot(x,S57_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_4),'#476b6b', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,29)
+for i in range(0,20):
+    plt.plot(x,S1707_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_4),'#476b6b', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,30)
+for i in range(0,20):
+    plt.plot(x,S59_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_4),'#476b6b', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,31)
+for i in range(0,20):
+    plt.plot(x,S60_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_4),'#476b6b', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.subplot(4,8,32)
+for i in range(0,20):
+    plt.plot(x,S61_sample4[i],'k-', alpha=.1)
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_4),'#476b6b', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day')
+plt.ylabel('veh/h',labelpad=0)
+plt.ylim((0,9800))
+plt.title('k=3')
+plt.legend(loc='upper right')
+plt.figtext(0.5,0.30, "January,February and December", ha="center", va="top", fontsize=14, color="r")
+plt.figtext(0.5,0.50, "Fridays, Wednesdays and Thursdays in June, July and August", ha="center", va="top", fontsize=14, color="r")
+plt.figtext(0.5,0.70, "No working days", ha="center", va="top", fontsize=14, color="r")
+plt.figtext(0.5,0.90, "First part of the week from May to November", ha="center", va="top", fontsize=14, color="r")
+plt.show()
 
 
