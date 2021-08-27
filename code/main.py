@@ -20,7 +20,9 @@ from datetime import datetime
 from sklearn.multioutput import MultiOutputRegressor
 from tslearn.generators import random_walks
 from sklearn.pipeline import Pipeline
-
+from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
+from tslearn.metrics import gamma_soft_dtw
+import calplot
 #IMPORT DATA S54  
 S54= pd.read_excel(r"TrafficData_I35W_2013.xlsx",sheet_name=0) 
 #speed
@@ -531,12 +533,13 @@ series_test_S61_density[0].shape
 print('Min: %f, Max: %f' % (series_test_S61_density[1].data_min_, series_test_S61_density[1].data_max_))
 
 
-#multivariate time series train
+
+#multivariate time series train flow 
 multivariate=np.dstack((series_train_S54_flow[0],series_train_S1706_flow[0],series_train_R169_flow[0],series_train_S56_flow[0],series_train_R129_flow[0],series_train_S57_flow[0],series_train_R170_flow[0],series_train_S1707_flow[0],series_train_S59_flow[0],series_train_R130_flow[0],series_train_R171_flow[0],series_train_S60_flow[0],series_train_S61_flow[0]))
 multivariate_time_series_train = to_time_series(multivariate)
 print(multivariate_time_series_train.shape)
 
-#multivariate time series test
+#multivariate time series test flow 
 multivariate_test=np.dstack((series_test_S54_flow[0],series_test_S1706_flow[0],series_test_R169_flow[0],series_test_S56_flow[0],series_test_R129_flow[0],series_test_S57_flow[0],series_test_R170_flow[0],series_test_S1707_flow[0],series_test_S59_flow[0],series_test_R130_flow[0],series_test_R171_flow[0],series_test_S60_flow[0],series_test_S61_flow[0]))
 multivariate_time_series_test = to_time_series(multivariate_test)
 print(multivariate_time_series_test.shape)
@@ -547,6 +550,7 @@ multivariate_speed=np.dstack((series_train_S54_speed[0],series_train_S1706_speed
 multivariate_time_series_train_speed = to_time_series(multivariate_speed)
 print(multivariate_time_series_train_speed.shape)
 
+
 #multivariate time series test speed
 multivariate_test_speed=np.dstack((series_test_S54_speed[0],series_test_S1706_speed[0],series_test_R169_speed[0],series_test_S56_speed[0],series_test_R129_speed[0],series_test_S57_speed[0],series_test_R170_speed[0],series_test_S1707_speed[0],series_test_S59_speed[0],series_test_R130_speed[0],series_test_R171_speed[0],series_test_S60_speed[0],series_test_S61_speed[0]))
 multivariate_time_series_test_speed = to_time_series(multivariate_test_speed)
@@ -554,7 +558,105 @@ print(multivariate_time_series_test_speed.shape)
 
 
 
-#dataframe to select days which belogns to the closest cluster 
+
+#CLUSTERING
+#estimate the gamma hyperparameter 
+gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) 
+
+#fit the model on train data 
+km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train_speed)
+
+#predict train 
+prediction_train=km_dba.fit_predict(multivariate_time_series_train_speed,y=None)
+
+#prediction test 
+prediction_test=km_dba.predict(multivariate_time_series_test_speed)
+
+
+#VISUALIZATION 
+
+#train
+first_mid=pd.date_range('1/1/2013', periods=171, freq='D')
+second_mid=pd.date_range('6/25/2013', periods=61, freq='D')
+third_mid=pd.date_range('8/27/2013', periods=12, freq='D')
+fourth_mid=pd.date_range('9/10/2013', periods=113, freq='D')
+
+
+first_mid=pd.Series(data=first_mid)
+second_mid=pd.Series(data=second_mid)
+third_mid=pd.Series(data=third_mid)
+fourth_mid=pd.Series(data=fourth_mid)
+index_train=pd.concat([first_mid,second_mid,third_mid,fourth_mid],ignore_index=True)
+
+
+#plot the result change 0 to 0.05 otherwise the calplot get confused  
+new=[]
+for i in range(0,):
+    if prediction_train[i] == 0:
+        y=0.05
+    elif prediction_train[i] !=0: 
+        y=prediction_train[i]
+    new.append(y)
+#### use these  cycles  if you want to change colors between cluster   
+for i in range(0,357):
+    if new[i] == 0.05:
+        new[i] =4
+        
+for i in range(0,357):
+    if new[i] == 2:
+        new[i] =0.05
+
+for i in range(0,357):
+    if new[i] ==4:
+        new[i] =2
+
+#assign at every day the cluster
+events_train = pd.Series(new,index=index_train)
+calplot.calplot(events_train,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2013 (train): loops', linewidth=2.3,dropzero=True,vmin=0) 
+
+
+#test
+first_week=pd.date_range('2/10/2014', periods=7, freq='D')
+second_week=pd.date_range('3/17/2014', periods=7, freq='D')
+third_week=pd.date_range('8/11/2014', periods=7, freq='D')
+fourth_week=pd.date_range('9/8/2014', periods=7, freq='D')
+fifth_week=pd.date_range('11/3/2014', periods=7, freq='D')
+
+first_week=pd.Series(data=first_week)
+second_week=pd.Series(data=second_week)
+third_week=pd.Series(data=third_week)
+fourth_week=pd.Series(data=fourth_week)
+fifth_week=pd.Series(data=fifth_week)
+
+index_test=pd.concat([first_week,second_week,third_week,fourth_week,fifth_week],ignore_index=True)
+new=[]
+
+#plot the result change 0 to 0.05 otherwise the calplot get confused 
+for i in range(0,35):
+    if prediction_test[i] == 0:
+        y=0.05
+    elif prediction_test[i] !=0: 
+        y=prediction_test[i]
+    new.append(y)
+#### use these  cycles  if you want to change colors between cluster   
+for i in range(0,35):
+    if new[i] == 0.05:
+        new[i] =4
+        
+for i in range(0,35):
+    if new[i] == 2:
+        new[i] =0.05
+
+for i in range(0,35):
+    if new[i] ==4:
+        new[i] =2
+
+
+events_test = pd.Series(new,index=index_test)
+calplot.calplot(events_test,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2014 (test):loops', linewidth=2.3,dropzero=True,vmin=0) 
+
+
+#dataframe to mark days with the correspondent cluster.
 len(index_train)
 columns=['days','k']
 index=np.arange(357)
@@ -570,10 +672,11 @@ dataframe_train.drop(['days'], axis=1)
 dataframe_train = dataframe_train[['year', 'month', 'day', 'k']]
 dataframe_train
 dataframe_train.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/Prediction without ramps clustering on the speed/Classification of the days no ramps clusteringspeed.xlsx')
-#if k=0 
-days_cluster=dataframe_train[dataframe_train['k']==0].index
+
+# if the clustering is done with respect to the flow and we wanto to select the days inside a specific cluster with respec to another variable (speed) run the following rows
+days_cluster=dataframe_train[dataframe_train['k']==1].index
 len(days_cluster)
-days_cluster[156]
+days_cluster[100]
 
 pd.set_option('display.max_seq_items', 300)
 print(days_cluster)
@@ -607,132 +710,6 @@ multivariate_time_series_train_subset.shape
 
 
 
-#CLUSTERING
-
-from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
-from tslearn.metrics import gamma_soft_dtw
-
-score_g, df = optimalK(multivariate_time_series_train, nrefs=5, maxClusters=7)
-
-plt.plot(df['clusterCount'], df['gap'], linestyle='--', marker='o', color='b');
-plt.xlabel('K');
-plt.ylabel('Gap Statistic');
-plt.title('Gap Statistic vs. number of cluster, test set');
-
-#estimate the gamma hyperparameter 
-gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) 
-
-#fit the model on train data 
-km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=multivariate_time_series_train_speed, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(multivariate_time_series_train_speed)
-
-#predict train 
-prediction_train=km_dba.fit_predict(multivariate_time_series_train_speed,y=None)
-
-#prediction test 
-prediction_test=km_dba.predict(multivariate_time_series_test_speed)
-
-#silhouette
-#train 
-silhouette_score(multivariate_time_series_train, prediction_train, metric="softdtw",metric_params={"gamma":})
-#test 
-silhouette_score(multivariate_time_series_test, prediction_test, metric="softdtw",metric_params={"gamma":})
-
-
-#visualization
-import calplot
-#train
-first_mid=pd.date_range('1/1/2013', periods=171, freq='D')
-second_mid=pd.date_range('6/25/2013', periods=61, freq='D')
-third_mid=pd.date_range('8/27/2013', periods=12, freq='D')
-fourth_mid=pd.date_range('9/10/2013', periods=113, freq='D')
-
-
-first_mid=pd.Series(data=first_mid)
-second_mid=pd.Series(data=second_mid)
-third_mid=pd.Series(data=third_mid)
-fourth_mid=pd.Series(data=fourth_mid)
-index_train=pd.concat([first_mid,second_mid,third_mid,fourth_mid],ignore_index=True)
-
-
-#plot the result 
-new=[]
-for i in range(0,357):
-    if prediction_train[i] == 0:
-        y=0.05
-    elif prediction_train[i] !=0: 
-        y=prediction_train[i]
-    new.append(y)
-    
-for i in range(0,357):
-    if new[i] == 0.05:
-        new[i] =4
-        
-for i in range(0,357):
-    if new[i] == 2:
-        new[i] =0.05
-
-for i in range(0,357):
-    if new[i] ==4:
-        new[i] =2
-
-#assign at every day the cluster
-events_train = pd.Series(new,index=index_train)
-calplot.calplot(events_train,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2013 (train): loops', linewidth=2.3,dropzero=True,vmin=0) 
-
-for i in range(0,357):
-    if new[i] == 0.05:
-        new[i]=0
-    prediction_train[i]=new[i]
-
-np.set_printoptions(threshold=400)        
-prediction_train      
-
-
-#test
-first_week=pd.date_range('2/10/2014', periods=7, freq='D')
-second_week=pd.date_range('3/17/2014', periods=7, freq='D')
-third_week=pd.date_range('8/11/2014', periods=7, freq='D')
-fourth_week=pd.date_range('9/8/2014', periods=7, freq='D')
-fifth_week=pd.date_range('11/3/2014', periods=7, freq='D')
-
-first_week=pd.Series(data=first_week)
-second_week=pd.Series(data=second_week)
-third_week=pd.Series(data=third_week)
-fourth_week=pd.Series(data=fourth_week)
-fifth_week=pd.Series(data=fifth_week)
-
-index_test=pd.concat([first_week,second_week,third_week,fourth_week,fifth_week],ignore_index=True)
-new=[]
-for i in range(0,35):
-    if prediction_test[i] == 0:
-        y=0.05
-    elif prediction_test[i] !=0: 
-        y=prediction_test[i]
-    new.append(y)
-  
-for i in range(0,35):
-    if new[i] == 0.05:
-        new[i] =4
-        
-for i in range(0,35):
-    if new[i] == 2:
-        new[i] =0.05
-
-for i in range(0,35):
-    if new[i] ==4:
-        new[i] =2
-
-
-events_test = pd.Series(new,index=index_test)
-calplot.calplot(events_test,yearlabel_kws={'color': 'black'}, cmap='Accent', suptitle='TrafficData_I35W_2014 (test):loops', linewidth=2.3,dropzero=True,vmin=0) 
-
-for i in range(0,35):
-    if new[i] == 0.05:
-        new[i]=0
-    prediction_test[i]=new[i]
-
-np.set_printoptions(threshold=400)        
-prediction_test      
 
 
 
@@ -741,98 +718,56 @@ centroids=km_dba.cluster_centers_
 
 centroids.shape
 
-#dataframe to select days which belogns to the closest cluster 
-len(index_train)
-columns=['days','k']
-index=np.arange(357)
-len(index)
-dataframe_train=pd.DataFrame(columns=columns,index=index)
-dataframe_train['days']=index_train
-dataframe_train['k']=prediction_train
-dataframe_train
-dataframe_train['day'] = dataframe_train['days'].dt.day
-dataframe_train['month'] =dataframe_train['days'].dt.month
-dataframe_train['year'] = dataframe_train['days'].dt.year
-dataframe_train.drop(['days'], axis=1)
-dataframe_train = dataframe_train[['year', 'month', 'day', 'k']]
-dataframe_train
-dataframe_train.to_excel('/Users/nronzoni/Desktop/TrafficData Minnesota/Prediction with ramps/Classification of the days.xlsx')
-#if k=0 
-days_cluster=dataframe_train[dataframe_train['k']==2].index
-len(days_cluster)
-#multivariate time series train speed
-#check if multivariate_speed already exist
-multivariate_speed=np.dstack((series_train_S54_speed[0],series_train_S1706_speed[0],series_train_R169_speed[0],series_train_S56_speed[0],series_train_R129_speed[0],series_train_S57_speed[0],series_train_R170_speed[0],series_train_S1707_speed[0],series_train_S59_speed[0],series_train_R130_speed[0],series_train_R171_speed[0],series_train_S60_speed[0],series_train_S61_speed[0]))
-multivariate_time_series_train_speed = to_time_series(multivariate_speed)
-print(multivariate_time_series_train_speed.shape)
-
-#multivariate time series test speed
-multivariate_test_speed=np.dstack((series_test_S54_speed[0],series_test_S1706_speed[0],series_test_R169_speed[0],series_test_S56_speed[0],series_test_R129_speed[0],series_test_S57_speed[0],series_test_R170_speed[0],series_test_S1707_speed[0],series_test_S59_speed[0],series_test_R130_speed[0],series_test_R171_speed[0],series_test_S60_speed[0],series_test_S61_speed[0]))
-multivariate_time_series_test_speed = to_time_series(multivariate_test_speed)
-print(multivariate_time_series_test_speed.shape)
-
-pd.set_option('display.max_seq_items', 200)
-print(days_cluster)
-multivariate_time_series_train_speed_subset=multivariate_time_series_train_speed[(17,  38,  45,  59,  66,  72,  80,  87,  94, 101, 115, 122, 129,
-            136, 142, 143, 150, 156, 157, 163, 164, 169, 170, 172, 173, 174,
-            179, 187, 188, 192, 193, 194, 195, 200, 201, 202, 207, 208, 209,
-            214, 215, 216, 220, 221, 222, 223, 229, 230, 233, 234, 235, 242,
-            247, 254, 260, 261, 268, 275, 282, 289, 296, 303, 310, 317, 322,
-            331, 338, 345),:,:]
-
-multivariate_time_series_train_speed_subset.shape
-#day nearest to the cluster centroid 
-closest(multivariate_time_series_train,prediction_train,centroids,3,events_train)
 
 ############# plot of the centroids 
-########## centroids#########################
+# centroid of each cluster with a random sample of time series inside the same cluster 
 ########################################### k=4 ################################
 
 ##### first cluster #######
-cluster1=multivariate_time_series_train[prediction_train==0]
+cluster1=multivariate_time_series_test_speed[prediction_train==0]
 
 random.shuffle(cluster1)
 
 sample1=cluster1[0:20]
 
 sample1.shape
-
+# inverse of the normalization for each time series in the sample
 S54_sample1=sample1[:,:,0]
-S54_sample1=series_train_S54_flow[1].inverse_transform(S54_sample1)
+S54_sample1=series_test_S54_speed[1].inverse_transform(S54_sample1)
 S54_sample1.shape
 
 S1706_sample1=sample1[:,:,1]
-S1706_sample1=series_train_S1706_flow[1].inverse_transform(S1706_sample1)
+S1706_sample1=series_test_S1706_speed[1].inverse_transform(S1706_sample1)
 S1706_sample1.shape
 
 S56_sample1=sample1[:,:,2]
-S56_sample1=series_train_S56_flow[1].inverse_transform(S56_sample1)
+S56_sample1=series_test_S56_speed[1].inverse_transform(S56_sample1)
 S56_sample1.shape
 
 S57_sample1=sample1[:,:,3]
-S57_sample1=series_train_S57_flow[1].inverse_transform(S57_sample1)
+S57_sample1=series_test_S57_speed[1].inverse_transform(S57_sample1)
 S57_sample1.shape
 
 S1707_sample1=sample1[:,:,4]
-S1707_sample1=series_train_S1707_flow[1].inverse_transform(S1707_sample1)
+S1707_sample1=series_test_S1707_speed[1].inverse_transform(S1707_sample1)
 S1707_sample1.shape
 
 S59_sample1=sample1[:,:,5]
-S59_sample1=series_train_S59_flow[1].inverse_transform(S59_sample1)
+S59_sample1=series_test_S59_speed[1].inverse_transform(S59_sample1)
 S59_sample1.shape
 
 S60_sample1=sample1[:,:,6]
-S60_sample1=series_train_S60_flow[1].inverse_transform(S60_sample1)
+S60_sample1=series_test_S60_speed[1].inverse_transform(S60_sample1)
 S60_sample1.shape
 
 S61_sample1=sample1[:,:,7]
-S61_sample1=series_train_S61_flow[1].inverse_transform(S61_sample1)
+S61_sample1=series_test_S61_speed[1].inverse_transform(S61_sample1)
 S61_sample1.shape
 
 
 ####second cluster #######
 
-cluster2=multivariate_time_series_train[prediction_train==1]
+cluster2=multivariate_time_series_test_speed[prediction_train==1]
 
 
 random.shuffle(cluster2)
@@ -840,37 +775,37 @@ random.shuffle(cluster2)
 sample2=cluster2[0:20]
 
 sample2.shape
-
+# inverse of the normalization for each time series in the sample
 S54_sample2=sample2[:,:,0]
-S54_sample2=series_train_S54_flow[1].inverse_transform(S54_sample2)
+S54_sample2=series_test_S54_speed[1].inverse_transform(S54_sample2)
 S54_sample2.shape
 
 S1706_sample2=sample2[:,:,1]
-S1706_sample2=series_train_S1706_flow[1].inverse_transform(S1706_sample2)
+S1706_sample2=series_test_S1706_speed[1].inverse_transform(S1706_sample2)
 S1706_sample2.shape
 
 S56_sample2=sample2[:,:,2]
-S56_sample2=series_train_S56_flow[1].inverse_transform(S56_sample2)
+S56_sample2=series_test_S56_speed[1].inverse_transform(S56_sample2)
 S56_sample2.shape
 
 S57_sample2=sample2[:,:,3]
-S57_sample2=series_train_S57_flow[1].inverse_transform(S57_sample2)
+S57_sample2=series_test_S57_speed[1].inverse_transform(S57_sample2)
 S57_sample2.shape
 
 S1707_sample2=sample2[:,:,4]
-S1707_sample2=series_train_S1707_flow[1].inverse_transform(S1707_sample2)
+S1707_sample2=series_test_S1707_speed[1].inverse_transform(S1707_sample2)
 S1707_sample2.shape
 
 S59_sample2=sample2[:,:,5]
-S59_sample2=series_train_S59_flow[1].inverse_transform(S59_sample2)
+S59_sample2=series_test_S59_speed[1].inverse_transform(S59_sample2)
 S59_sample2.shape
 
 S60_sample2=sample2[:,:,6]
-S60_sample2=series_train_S60_flow[1].inverse_transform(S60_sample2)
+S60_sample2=series_test_S60_speed[1].inverse_transform(S60_sample2)
 S60_sample2.shape
 
 S61_sample2=sample2[:,:,7]
-S61_sample2=series_train_S61_flow[1].inverse_transform(S61_sample2)
+S61_sample2=series_test_S61_speed[1].inverse_transform(S61_sample2)
 S61_sample2.shape
 
 
@@ -883,7 +818,7 @@ sample3=cluster3[0:20]
 
 sample3.shape
 
-
+# inverse of the normalization for each time series in the sample
 S54_sample3=sample3[:,:,0]
 S54_sample3=series_train_S54_flow[1].inverse_transform(S54_sample3)
 S54_sample3.shape
@@ -924,7 +859,7 @@ random.shuffle(cluster4)
 sample4=cluster4[0:20]
 
 sample4.shape
-
+# inverse of the normalization for each time series in the sample
 S54_sample4=sample4[:,:,0]
 S54_sample4=series_train_S54_flow[1].inverse_transform(S54_sample4)
 S54_sample4.shape
@@ -958,9 +893,8 @@ S61_sample4=series_train_S61_flow[1].inverse_transform(S61_sample4)
 S61_sample4.shape
 
 
-# plot the centroids k=4 
-centroids=km_dba.cluster_centers_
-centroids.shape
+# centroids 
+
 
 #k=0#
 S54_1=centroids[0][:,0]
@@ -1069,151 +1003,152 @@ x=np.arange(5,23,0.1)
 len(x)
 
 
-plt.figure(figsize=(35,40))
-plt.subplot(4,8,1)
+plt.figure(figsize=(35,30))
+plt.subplot(2,8,1)
 for i in range(0,20):
-    plt.plot(x,S54_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_3),'#33cc33', label = 'S54',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,2)
+    plt.plot(x,S54_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_1),'#33cc33', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,2)
 for i in range(0,20):
-    plt.plot(x,S1706_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_3),'#33cc33', label = 'S1706',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,3)
+    plt.plot(x,S1706_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_1),'#33cc33', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,3)
 for i in range(0,20):
-    plt.plot(x,S56_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_3),'#33cc33', label = 'S56',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,4)
+    plt.plot(x,S56_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_1),'#33cc33', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,4)
 for i in range(0,20):
-    plt.plot(x,S57_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_3),'#33cc33', label = 'S57',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,5)
+    plt.plot(x,S57_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_1),'#33cc33', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,5)
 for i in range(0,20):
-    plt.plot(x,S1707_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_3),'#33cc33', label = 'S1707',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,6)
+    plt.plot(x,S1707_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_1),'#33cc33', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,6)
 for i in range(0,20):
-    plt.plot(x,S59_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_3),'#33cc33', label = 'S59',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,7)
+    plt.plot(x,S59_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_1),'#33cc33', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,7)
 for i in range(0,20):
-    plt.plot(x,S60_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_3),'#33cc33', label = 'S60',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,8)
+    plt.plot(x,S60_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_1),'#33cc33', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,8)
 for i in range(0,20):
-    plt.plot(x,S61_sample3[i],'k-', alpha=.1)
-plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_3),'#33cc33', label = 'S61',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=0')
-plt.legend(loc='upper right')
-plt.subplot(4,8,9)
+    plt.plot(x,S61_sample1[i],'k-', alpha=.8)
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_1),'#33cc33', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=0',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,9)
 for i in range(0,20):
     plt.plot(x,S54_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_2),'#ff9900', label = 'S54',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,10)
+plt.plot(x,series_train_S54_flow[1].inverse_transform(S54_2),'#666699', label = 'S54',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,10)
 for i in range(0,20):
     plt.plot(x,S1706_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_2),'#ff9900', label = 'S1706',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,11)
+plt.plot(x,series_train_S1706_flow[1].inverse_transform(S1706_2),'#666699', label = 'S1706',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,11)
 for i in range(0,20):
     plt.plot(x,S56_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_2),'#ff9900', label = 'S56',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,12)
+plt.plot(x,series_train_S56_flow[1].inverse_transform(S56_2),'#666699', label = 'S56',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,12)
 for i in range(0,20):
     plt.plot(x,S57_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_2),'#ff9900', label = 'S57',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,13)
+plt.plot(x,series_train_S57_flow[1].inverse_transform(S57_2),'#666699', label = 'S57',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('veh/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,13)
 for i in range(0,20):
     plt.plot(x,S1707_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_2),'#ff9900', label = 'S1707',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,14)
+plt.plot(x,series_train_S1707_flow[1].inverse_transform(S1707_2),'#666699', label = 'S1707',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('km/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,14)
 for i in range(0,20):
     plt.plot(x,S59_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_2),'#ff9900', label = 'S59',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,15)
+plt.plot(x,series_train_S59_flow[1].inverse_transform(S59_2),'#666699', label = 'S59',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('veh/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,15)
 for i in range(0,20):
     plt.plot(x,S60_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_2),'#ff9900', label = 'S60',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
-plt.subplot(4,8,16)
+plt.plot(x,series_train_S60_flow[1].inverse_transform(S60_2),'#666699', label = 'S60',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('veh/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.subplot(2,8,16)
 for i in range(0,20):
     plt.plot(x,S61_sample2[i],'k-', alpha=.1)
-plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_2),'#ff9900', label = 'S61',linewidth=3)
-plt.xlabel('hours of the day')
-plt.ylabel('veh/h',labelpad=0)
-plt.ylim((0,9800))
-plt.title('k=1')
-plt.legend(loc='upper right')
+plt.plot(x,series_train_S61_flow[1].inverse_transform(S61_2),'#666699', label = 'S61',linewidth=3)
+plt.xlabel('hours of the day',fontsize=18)
+plt.ylabel('veh/h',labelpad=0,fontsize=18)
+plt.ylim((0,200))
+plt.title('k=1',fontsize=18)
+plt.legend(loc='upper right',fontsize=18)
+plt.show()
 plt.subplot(4,8,17)
 for i in range(0,20):
     plt.plot(x,S54_sample1[i],'k-', alpha=.1)

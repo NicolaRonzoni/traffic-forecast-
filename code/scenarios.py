@@ -5,7 +5,7 @@ Created on Wed Jun 23 11:51:44 2021
 
 @author: nronzoni
 """
-
+###### SAVE THE CENTROIDS 
 #centroids 
 centroids=km_dba.cluster_centers_
 

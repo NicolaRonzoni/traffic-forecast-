@@ -5,8 +5,7 @@ Created on Mon Jun  7 09:14:43 2021
 
 @author: nronzoni
 """
-
-
+#libraries 
 import pandas as pd 
 import scipy 
 import sklearn
@@ -15,7 +14,6 @@ import numpy as np
 import random
 from toolz.itertoolz import sliding_window, partition
 from tslearn.utils import to_time_series, to_time_series_dataset
-##### strategy for normalization 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from tslearn.clustering import TimeSeriesKMeans, KernelKMeans, silhouette_score
 from tslearn.metrics import gamma_soft_dtw
@@ -30,6 +28,11 @@ import math
 from statistics import mean
 from sklearn.multioutput import RegressorChain,ClassifierChain
 from sklearn.svm import SVR
+from tslearn.generators import random_walks
+from tslearn.svm import TimeSeriesSVR
+from sklearn.metrics import mean_squared_error
+from sklearn import linear_model 
+#FOR EVERY VARIABLES: DELETE DAYS WITH NAN VALUES GREATER THAN THE THRESHOLD, DELETE THE NIGHT, DECLARE THE TIME AGGREGATION
 #speed km/h
 def data_split(data):
     data_speed=data['Speed (km/h)']
@@ -190,7 +193,7 @@ def data_split_density(data):
 
 
 
-#define a function to create the daily time series and the scaling ---> clustering 
+#define a function to create the daily time series and the compute the scaling 
 def daily_series(data,n):
     #normalization of the data 
     data=np.array(data)
@@ -211,9 +214,7 @@ def daily_series(data,n):
     daily_time_series = to_time_series(time_series)
     return daily_time_series, scaler_series
 
-#define a function to create the daily time series but without the scaling for the prediction 
-#the scaling require the knowledge of the all test set, instead in the prediction we assume that 
-#we don't have all data from the very beginning but they become available step by step 
+#define a function to create the daily time series but without the scaling 
 def daily_series_pred(data,n):
     #normalization of the data 
     data=np.array(data)
@@ -229,6 +230,7 @@ def daily_series_pred(data,n):
     daily_time_series = to_time_series(time_series)
     return daily_time_series
 
+#Function to decide the number of cluster: NEVER USED
 # Gap Statistic for K means
 def optimalK(data, nrefs=3, maxClusters=15):
     """
@@ -269,7 +271,7 @@ def optimalK(data, nrefs=3, maxClusters=15):
         resultsdf = resultsdf.append({'clusterCount':k, 'gap':gap}, ignore_index=True)
     return (gaps.argmax() + 1, resultsdf)
 
-from tslearn.generators import random_walks
+#### EXAMPLE OF USAGE OF optimalK FUNCTION 
 X = random_walks(n_ts=50, sz=32, d=2)
 
 score_g, df = optimalK(X, nrefs=5, maxClusters=7)
@@ -279,7 +281,8 @@ plt.xlabel('K');
 plt.ylabel('Gap Statistic');
 plt.title('Gap Statistic vs. K');
 
-def dtw(s, t, window,window_weight):
+### function for dynamic time warping with weights, put more weight in the last observations: NEVER USED
+def dtw_WEIGHT(s, t, window,window_weight):
     n, m = len(s), len(t)
     w = np.max([window, abs(n-m)])
     dtw_matrix = np.zeros((n+1, m+1))
@@ -305,7 +308,8 @@ def dtw(s, t, window,window_weight):
                 dtw_matrix[i, j] = cost + last_min
     return math.sqrt(dtw_matrix[n, m])
 
-#find the day closest to the centroid 
+
+# function to find the day closest to the centroid using soft-DTW : NEVER USED
 def closest(multivariate_time_series_train,prediction_train,centroids,k,events_train):
     if k==0:
         c=k+0.05
@@ -322,13 +326,62 @@ def closest(multivariate_time_series_train,prediction_train,centroids,k,events_t
     df.index=index
     return print(df[df.sim==df.sim.min()])
 
-#PREDICTION
-from tslearn.svm import TimeSeriesSVR
-from sklearn.metrics import mean_squared_error
-from statistics import mean
+# function to find the day closest to the centroid using DTW: compute the clustering inside the function, return 5 days closer to the target  
+def closest_days_target(train,test,starting_time,window_past):
+    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
+    prediction_train=km_dba.predict(train)
+    #take the centroid 
+    centroid=km_dba.cluster_centers_
+    #for each centroid select only the observations available of the day that we would like to predict 
+    train_set=centroid[:,starting_time-window_past:starting_time,:]
+    #select observations available in the test
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    columns=["cluster","sim"]
+    df=pd.DataFrame(columns=columns)
+    #select the centroid closest to test data 
+    for i in range (0,4):
+      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
+      df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
+    df["sim"]=df["sim"].abs()
+    cluster=df[df.sim==df.sim.min()].cluster
+    print(cluster)
+    train_set=train[prediction_train==cluster.values]
+    #X and Y split select the loop that we would like to predict 
+    X_train=train_set[:,starting_time-window_past:starting_time,:]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    print(train_set.shape[0])
+    for j in range(0,train_set.shape[0]):
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:],5,10) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1.nsmallest(5, 'sim1', keep='all').index
+    return print(ts)
 
+# function to find the day closest to the centroid using DTW: no clustering inside the function, return 5 days closer to the target  
+def closest_days_target_speed(train,test,starting_time,window_past):
+    #X and Y split select the loop that we would like to predict 
+    X_test=test[:,starting_time-window_past:starting_time,:]
+    X_train=train[:,starting_time-window_past:starting_time,:]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    print(train.shape[0])
+    for j in range(0,train.shape[0]):
+        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1.nsmallest(5, 'sim1', keep='all').index
+    return print(ts)
+
+
+
+#PREDICTIONS: FUNCTION FOR one step and multistep predictions
+
+# sets for C and epsilon hyperparameters, used in the functions
 p_grid = {"C": [0.1,1,10,100], "epsilon":[0.01,0.1,1,10]}
 
+# function for one step SVR prediction using all loops of the road segment, and the clustering procedure to select closest days to the target;
+# The  number of cluster is set equal to the number of cluster used in the clustering of the entire time series. 
 def walk_forward_validation(train,test,window_size,starting_time,loop):
     #define a starting split X and Y for test set 
     X_test=test[:,0:starting_time,:]
@@ -378,7 +431,7 @@ def walk_forward_validation(train,test,window_size,starting_time,loop):
     GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
     return PRED_test, GROUND_TRUTH_test
  
- #no clustering use the all train set 
+# function for one step SVR prediction using all loops in the road segment, NO clustering use of the entire train set
 def walk_forward_validation_bis(train,test,window_size,starting_time,loop):
     #define a starting split X and Y for test set 
     X_test=test[:,0:starting_time,:]
@@ -420,9 +473,52 @@ def walk_forward_validation_bis(train,test,window_size,starting_time,loop):
     GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
     return PRED_test, GROUND_TRUTH_test
  
+#function for one step SVR prediction using only the  data of the loop that we want to predict, NO clustering use of the entire train set
+def walk_forward_validation_tris(train,test,window_size,starting_time,loop):
+    #define a starting split X and Y for test set 
+    X_test=test[:,0:starting_time,loop]
+    Y_test=test[:,starting_time:,loop]
+    GROUND_TRUTH_test=[]
+    PRED_test=[]
+    for t in range(0,10): # number of prediction from starting point
+        # take an observation forward: len(X_train)=len(X_test)+1 
+        train_set=train[:,0:starting_time+1+t,loop]
+        #select only most window_size+1 recent observations for train 
+        XY_train=train_set[:,-window_size-1:]
+        #select only most window_size recent observations for test
+        X_test=X_test[:,-window_size:]
+        #divide X and Y in the train set 
+        X_train=XY_train[:,-window_size-1:-1]
+        Y_train=XY_train[:,-1:]
+        #select the detector we want to predict
+        x_train=X_train
+        x_test=X_test
+        #select the target Train 
+        y_train=Y_train
+        #select the target Test
+        y_test=Y_test[:,t].ravel()
+        #rescale the target Test 
+        GROUND_TRUTH_test.append(y_test)
+        #Grid search to tune the parameters
+        reg =SVR(kernel="rbf", gamma="auto")
+        clf = GridSearchCV(estimator=reg, param_grid=p_grid, scoring='neg_mean_squared_error',refit=True,cv=3)
+        #fit the model with the best found parameters
+        clf.fit(x_train,y_train)
+        # prediction for the test 
+        y_hat_test=clf.predict(x_test)
+        #rescale the prediction of the Test 
+        PRED_test.append(y_hat_test)
+        #Add the curent observation to the X set 
+        obs_test=Y_test[:,t:t+1]
+        X_test=np.hstack((X_test,obs_test))
+    PRED_test=np.concatenate(PRED_test,axis=0)
+    GROUND_TRUTH_test=np.concatenate(GROUND_TRUTH_test,axis=0)
+    return PRED_test, GROUND_TRUTH_test
+ 
 
 
-      
+#Function for one step prediction based only on the clustering of all loops of the road segment. The train set moves forward and as a prediction we took the last observation of the centroid. Be aware that the train set 
+# has 1 observation more than test set, this is necessary to select the observation in the future.       
 def loubes(train,test,window_size,starting_time):
     #define a starting split X and Y for test set 
     X_test=test[:,0:starting_time,:]
@@ -431,7 +527,7 @@ def loubes(train,test,window_size,starting_time):
     PRED_test=[]
     ground_truth=[] 
     MSE_test=[] 
-    for t in range(0,30): # number of prediction from starting point to the end of the day
+    for t in range(0,30): # number of prediction from starting point 
         # take an observation forward: len(X_train)=len(X_test)+1 
         train_set=train[:,0:starting_time+1+t,:]
         #select only most window_size+1 recent observations for train 
@@ -464,8 +560,10 @@ def loubes(train,test,window_size,starting_time):
     return PRED_test, ground_truth, mean(MSE_test)
 
 
-############################### FLOW #######################################
 
+#function for multistep prediction, clustering on all loops of the road segment and then recognize the closest day of the with respect to all loops based on DTW:
+    #1. see in which cluster belong the target
+    #2. pick inside the cluster the closest day to the target
 def classification_pred_same(train,test,starting_time,window_future,window_past):
     km_dba = TimeSeriesKMeans(n_clusters=2, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
     prediction_train=km_dba.predict(train)
@@ -502,6 +600,8 @@ def classification_pred_same(train,test,starting_time,window_future,window_past)
     Y_pred=train_set[ts.index,starting_time:starting_time+window_future,:]
     return cluster,ts, Y_pred, Y_test
 
+# function for multistep prediction, NO clustering on all loops of the road segment, directly pick up the closest day with respect to all loops based on DTW 
+
 def classification_pred_same_bis(train,test,starting_time,window_future,window_past):
     X_train=train[:,starting_time-window_past:starting_time,:]
     X_test=test[:,starting_time-window_past:starting_time,:]
@@ -520,6 +620,26 @@ def classification_pred_same_bis(train,test,starting_time,window_future,window_p
     return ts, Y_pred, Y_test
 
 
+#function for multistep prediction: NO clustering on all loops of the road segment, pick up the closest day for every loop in the road segment
+#selection of the closest day only considering single loop detector 
+def classification_pred_same_tris(train,test,starting_time,window_future,window_past,loop):
+    X_train=train[:,starting_time-window_past:starting_time,loop]
+    X_test=test[:,starting_time-window_past:starting_time,loop]
+    Y_test=test[0,starting_time:starting_time+window_future,loop]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    for j in range(0,X_train.shape[0]):
+        #compare time series of the same lenght 
+        sim1 = dtw(X_test[0,:],X_train[j,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1[df1.sim1==df1.sim1.min()].ts
+    print(ts)
+    #select the time series closest to the test and return the window_future as prediction
+    Y_pred=train[ts.index,starting_time:starting_time+window_future,loop]
+    return ts, Y_pred, Y_test
+
+#function for multistep SVR prediction: clustering on all loops of the road segment to select only day closest to the target. Then to predict single loop use all looop of the road segment
 def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
     km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
     prediction_train=km_dba.predict(train)
@@ -555,23 +675,8 @@ def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
     Y_pred=gs_svr.predict(X_test)
     return cluster, Y_pred, Y_test
 
-########################### SPEED ###############################
-def classification_pred_speed(train,test,starting_time,window_future,window_past):
-    X_train=train[:,starting_time-window_past:starting_time,:]
-    X_test=test[:,starting_time-window_past:starting_time,:]
-    Y_test=test[0,starting_time:starting_time+window_future,:]
-    columns1=["ts","sim1"]
-    df1=pd.DataFrame(columns=columns1)
-    for j in range(0,train.shape[0]):
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
-        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
-    df1["sim1"]=df1["sim1"].abs()
-    ts=df1[df1.sim1==df1.sim1.min()].ts
-    print(ts)
-    #select the time series closest to the test and return the window_future as prediction
-    Y_pred=train[ts.index,starting_time:starting_time+window_future,:]
-    return ts, Y_pred, Y_test
 
+# function for multistep SVR prediction: NO clustering on all loops of the road segment, just use the whole train set. Then to predict single loop use all looop of the road segment 
 def SVR_pred_d_speed(train,test,starting_time,window_past,window_future,loop):
     X_train=train[:,starting_time-window_past:starting_time,:]
     X_train=X_train.reshape(train.shape[0],-1)
@@ -588,52 +693,25 @@ def SVR_pred_d_speed(train,test,starting_time,window_past,window_future,loop):
     Y_pred=gs_svr.predict(X_test)
     return  Y_pred, Y_test
 
-#################### to put the weights ######################## 
+# function for multistep SVR prediction : just using data from the loop that we want to predict 
+def SVR_pred_d_speed_bis(train,test,starting_time,window_past,window_future,loop):
+    X_train=train[:,starting_time-window_past:starting_time,loop]
+    X_train=X_train
+    Y_train=train[:,starting_time:starting_time+window_future,loop]
+    X_test=test[:,starting_time-window_past:starting_time,loop]
+    X_test=X_test
+    Y_test=test[:,starting_time:starting_time+window_future,loop]
+    reg = SVR(kernel="rbf", gamma="auto")
+    pipe_svr = Pipeline([('reg', MultiOutputRegressor(reg))])
+    grid_param_svr = {"reg__estimator__C": [0.1,1,10,100], "reg__estimator__epsilon":[0.01,0.1,1,10]}
+    gs_svr = (GridSearchCV(estimator=pipe_svr, param_grid=grid_param_svr, cv=3,scoring = 'neg_mean_squared_error', n_jobs = -1))
+    gs_svr = gs_svr.fit(X_train,Y_train)
+    print(gs_svr.best_estimator_) 
+    Y_pred=gs_svr.predict(X_test)
+    return  Y_pred, Y_test
 
-def closest_days_target(train,test,starting_time,window_past):
-    km_dba = TimeSeriesKMeans(n_clusters=4, metric="softdtw",metric_params={"gamma":gamma_soft_dtw(dataset=train, n_samples=200,random_state=0) }, max_iter=5,max_iter_barycenter=5, random_state=0).fit(train)
-    prediction_train=km_dba.predict(train)
-    #take the centroid 
-    centroid=km_dba.cluster_centers_
-    #for each centroid select only the observations available of the day that we would like to predict 
-    train_set=centroid[:,starting_time-window_past:starting_time,:]
-    #select observations available in the test
-    X_test=test[:,starting_time-window_past:starting_time,:]
-    columns=["cluster","sim"]
-    df=pd.DataFrame(columns=columns)
-    #select the centroid closest to test data 
-    for i in range (0,4):
-      sim = dtw(X_test[0,:,:],train_set[i,:,:])   
-      df = df.append({'cluster': i,'sim': sim}, ignore_index=True)
-    df["sim"]=df["sim"].abs()
-    cluster=df[df.sim==df.sim.min()].cluster
-    print(cluster)
-    train_set=train[prediction_train==cluster.values]
-    #X and Y split select the loop that we would like to predict 
-    X_train=train_set[:,starting_time-window_past:starting_time,:]
-    columns1=["ts","sim1"]
-    df1=pd.DataFrame(columns=columns1)
-    print(train_set.shape[0])
-    for j in range(0,train_set.shape[0]):
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:],5,10) 
-        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
-    df1["sim1"]=df1["sim1"].abs()
-    ts=df1.nsmallest(5, 'sim1', keep='all').index
-    return print(ts)
 
-def closest_days_target_speed(train,test,starting_time,window_past):
-    #X and Y split select the loop that we would like to predict 
-    X_test=test[:,starting_time-window_past:starting_time,:]
-    X_train=train[:,starting_time-window_past:starting_time,:]
-    columns1=["ts","sim1"]
-    df1=pd.DataFrame(columns=columns1)
-    print(train.shape[0])
-    for j in range(0,train.shape[0]):
-        sim1 = dtw(X_test[0,:,:],X_train[j,:,:]) 
-        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
-    df1["sim1"]=df1["sim1"].abs()
-    ts=df1.nsmallest(5, 'sim1', keep='all').index
-    return print(ts)
+
 
 
 
