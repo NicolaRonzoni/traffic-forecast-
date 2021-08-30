@@ -355,7 +355,7 @@ print('Min: %f, Max: %f' % (series_test_S54_density[1].data_min_, series_test_S5
 #S1706
 #speed
 series_test_S1706_speed=daily_series(S1706_speed[1],180)
-series_test_S1706_speed[0].shape
+series_test_S1706_speed[0]
 print('Min: %f, Max: %f' % (series_test_S1706_speed[1].data_min_, series_test_S1706_speed[1].data_max_))
 #flow
 series_test_S1706_flow=daily_series(S1706_flow[1],180)
@@ -1001,6 +1001,7 @@ fig = plt.gcf()
 
 x=np.arange(5,23,0.1)
 len(x)
+
 
 
 plt.figure(figsize=(35,30))

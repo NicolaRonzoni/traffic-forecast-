@@ -5,6 +5,7 @@ Created on Mon Jun  7 09:14:43 2021
 
 @author: nronzoni
 """
+pip install statsmodels
 #libraries 
 import pandas as pd 
 import scipy 
@@ -25,6 +26,7 @@ from tslearn.generators import random_walks
 from sklearn.pipeline import Pipeline
 from scipy.spatial import distance
 import math 
+import statsmodels.api as sm
 from statistics import mean
 from sklearn.multioutput import RegressorChain,ClassifierChain
 from sklearn.svm import SVR
@@ -214,7 +216,7 @@ def daily_series(data,n):
     daily_time_series = to_time_series(time_series)
     return daily_time_series, scaler_series
 
-#define a function to create the daily time series but without the scaling 
+#define a function to create the daily time series but without the scaling: never used 
 def daily_series_pred(data,n):
     #normalization of the data 
     data=np.array(data)
@@ -358,7 +360,7 @@ def closest_days_target(train,test,starting_time,window_past):
     ts=df1.nsmallest(5, 'sim1', keep='all').index
     return print(ts)
 
-# function to find the day closest to the centroid using DTW: no clustering inside the function, return 5 days closer to the target  
+# function to find the day closest to the  target using DTW: no clustering inside the function, return 5 days closer to the target  
 def closest_days_target_speed(train,test,starting_time,window_past):
     #X and Y split select the loop that we would like to predict 
     X_test=test[:,starting_time-window_past:starting_time,:]
@@ -638,6 +640,48 @@ def classification_pred_same_tris(train,test,starting_time,window_future,window_
     #select the time series closest to the test and return the window_future as prediction
     Y_pred=train[ts.index,starting_time:starting_time+window_future,loop]
     return ts, Y_pred, Y_test
+
+train= random_walks(n_ts=50, sz=32, d=4)
+test = X = random_walks(n_ts=1, sz=32, d=4)
+train.shape
+test.shape
+
+def classification_pred_same_qatris(train,test,starting_time,window_future,window_past,loop):
+    X_train=train[:,starting_time-window_past:starting_time,loop]
+    X_test=test[:,starting_time-window_past:starting_time,loop]
+    Y_test=test[0,starting_time:starting_time+window_future,loop]
+    columns1=["ts","sim1"]
+    df1=pd.DataFrame(columns=columns1)
+    for j in range(0,X_train.shape[0]):
+        #compare time series of the same lenght 
+        sim1 = dtw(X_test[0,:],X_train[j,:]) 
+        df1 = df1.append({'ts': j,'sim1': sim1}, ignore_index=True)
+    df1["sim1"]=df1["sim1"].abs()
+    ts=df1[df1.sim1==df1.sim1.min()].ts
+    print(ts)
+    #select the time series closest to the test and return the window_future as prediction
+    Y_pred=train[ts.index,starting_time:starting_time+window_future,loop]
+    #history of the closest day
+    X_train_bis=train[ts.index,starting_time-window_past:starting_time,loop]
+    X_train_bis=X_train_bis[0,]
+    #history of the target 
+    X_test_bis=test[0,starting_time-window_past:starting_time,loop]
+    print(X_test_bis.shape)
+    print(X_train_bis.shape)
+    #apply ordinary least square 
+    #X_train_tris = sm.add_constant(X_train_bis)
+    #print(X_train_tris.shape)
+    model = sm.OLS(X_test,X_train_bis)
+    results = model.fit()
+    alpha=results.params[0]
+    beta=results.params[1]
+    print(alpha,beta)
+    #Y_pred_bis=np.array(Y_pred)*beta+alpha
+    #print(Y_pred_bis)
+    #print(Y_pred)
+    return ts, #Y_pred_bis, Y_test
+
+classification_pred_same_qatris(train,test,20,10,10,1)
 
 #function for multistep SVR prediction: clustering on all loops of the road segment to select only day closest to the target. Then to predict single loop use all looop of the road segment
 def SVR_pred_d(train,test,starting_time,window_past,window_future,loop):
