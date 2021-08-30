@@ -9,7 +9,7 @@ To run the code .py the following step are necessary:
 
 Have installed python3.
 Having access to Spyder  from Anaconda or from Colab.
-The code uses the following libraries:
+The code uses the following packages:
 - math;
 - scipy;
 - pandas;
