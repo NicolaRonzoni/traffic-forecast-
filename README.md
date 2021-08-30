@@ -19,7 +19,9 @@ The code uses the following libraries:
 - tslearn; 
 - sklearn;
 - matplotlib.
-(use the pip install command if needed)
+
+(use the pip install command for installing the packages)
+https://docs.python.org/3/installing/index.html
 
 The code is organized in the following sheets:
 - "function" contains all the functions; 
